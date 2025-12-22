@@ -647,84 +647,179 @@ Automate FortiGate using REST API with Postman and VS Code integration.
 
 - REST API automation with Postman
 - VS Code integration for API testing
-- GitHub workflow for firewall configs
+- CRUD operations (GET, POST, PUT, DELETE)
 
-### 💻 Commands
+### 📁 FortiGate API Structure
+
+```
+/api/v2/
+├── cmdb/      → Configuration (Create, Read, Update, Delete)
+├── monitor/   → Status & Monitoring (Read-only)
+└── log/       → Logs & Events (Read-only)
+```
+
+### 🔧 Postman Environment Variables
+
+| Variable | Value |
+|----------|-------|
+| `base_url` | `https://your-fortigate-ip` |
+| `api_token` | `your-api-token` |
+| `vdom` | `root` |
+
+### 💻 API Endpoints & Commands
 
 <details>
-<summary>1. Test API with cURL</summary>
+<summary>1. GET - System Monitoring</summary>
 
+**Endpoint:**
+```
+https://{{base_url}}/api/v2/monitor/system/status?vdom={{vdom}}
+```
+
+**cURL:**
 ```bash
-# Get system status
 curl -k -X GET "https://192.168.1.111/api/v2/monitor/system/status?vdom=root" \
   -H "Authorization: Bearer YOUR_API_TOKEN"
+```
 
-# Get firewall addresses
-curl -k -X GET "https://192.168.1.111/api/v2/cmdb/firewall/address?vdom=root" \
-  -H "Authorization: Bearer YOUR_API_TOKEN"
-
-# Get firewall policies
-curl -k -X GET "https://192.168.1.111/api/v2/cmdb/firewall/policy?vdom=root" \
-  -H "Authorization: Bearer YOUR_API_TOKEN"
+**Headers:**
+```
+Authorization: Bearer {{api_token}}
 ```
 
 </details>
 
 <details>
-<summary>2. Create Address Object (POST)</summary>
+<summary>2. POST - Create Firewall Address</summary>
 
+**Endpoint:**
+```
+https://{{base_url}}/api/v2/cmdb/firewall/address?vdom={{vdom}}
+```
+
+**cURL:**
 ```bash
 curl -k -X POST "https://192.168.1.111/api/v2/cmdb/firewall/address?vdom=root" \
   -H "Authorization: Bearer YOUR_API_TOKEN" \
   -H "Content-Type: application/json" \
   -d '{
-    "name": "WebServer-1",
+    "name": "API_Demo_Server",
+    "subnet": "10.0.5.100 255.255.255.255",
     "type": "ipmask",
-    "subnet": "10.0.10.100 255.255.255.255",
-    "comment": "Web server created via API"
+    "comment": "Created via Postman API"
   }'
+```
+
+**Request Body (JSON):**
+```json
+{
+  "name": "API_Demo_Server",
+  "subnet": "10.0.5.100 255.255.255.255",
+  "type": "ipmask",
+  "comment": "Created via Postman API"
+}
 ```
 
 </details>
 
 <details>
-<summary>3. Create Firewall Policy (POST)</summary>
+<summary>3. PUT - Update Interface</summary>
 
+**Endpoint:**
+```
+https://{{base_url}}/api/v2/cmdb/system/interface/port2?vdom={{vdom}}
+```
+
+**cURL:**
 ```bash
-curl -k -X POST "https://192.168.1.111/api/v2/cmdb/firewall/policy?vdom=root" \
+curl -k -X PUT "https://192.168.1.111/api/v2/cmdb/system/interface/port2?vdom=root" \
   -H "Authorization: Bearer YOUR_API_TOKEN" \
   -H "Content-Type: application/json" \
   -d '{
-    "name": "Allow-Web-Traffic",
-    "srcintf": [{"name": "port1"}],
-    "dstintf": [{"name": "port2"}],
-    "srcaddr": [{"name": "all"}],
-    "dstaddr": [{"name": "WebServer-1"}],
-    "service": [{"name": "HTTP"}, {"name": "HTTPS"}],
-    "action": "accept",
-    "status": "enable"
+    "alias": "LAN-Internal",
+    "description": "Updated via Postman API"
   }'
+```
+
+**Request Body (JSON):**
+```json
+{
+  "alias": "LAN-Internal",
+  "description": "Updated via Postman API"
+}
 ```
 
 </details>
 
 <details>
-<summary>4. Common API Endpoints</summary>
+<summary>4. GET - Firewall Addresses & Policies</summary>
 
 ```bash
-# System Information
+# Get all firewall addresses
+curl -k -X GET "https://192.168.1.111/api/v2/cmdb/firewall/address?vdom=root" \
+  -H "Authorization: Bearer YOUR_API_TOKEN"
+
+# Get all firewall policies
+curl -k -X GET "https://192.168.1.111/api/v2/cmdb/firewall/policy?vdom=root" \
+  -H "Authorization: Bearer YOUR_API_TOKEN"
+
+# Get system interfaces
+curl -k -X GET "https://192.168.1.111/api/v2/cmdb/system/interface?vdom=root" \
+  -H "Authorization: Bearer YOUR_API_TOKEN"
+```
+
+</details>
+
+<details>
+<summary>5. POST - Create Firewall Policy</summary>
+
+**Endpoint:**
+```
+https://{{base_url}}/api/v2/cmdb/firewall/policy?vdom={{vdom}}
+```
+
+**Request Body (JSON):**
+```json
+{
+  "name": "Allow-Web-Traffic",
+  "srcintf": [{"name": "port1"}],
+  "dstintf": [{"name": "port2"}],
+  "srcaddr": [{"name": "all"}],
+  "dstaddr": [{"name": "API_Demo_Server"}],
+  "service": [{"name": "HTTP"}, {"name": "HTTPS"}],
+  "action": "accept",
+  "status": "enable"
+}
+```
+
+</details>
+
+<details>
+<summary>6. Common API Endpoints Reference</summary>
+
+**System Monitoring (GET only):**
+```
 /api/v2/monitor/system/status
 /api/v2/monitor/system/interface
-/api/v2/cmdb/system/global
+/api/v2/monitor/system/resource/usage
+/api/v2/monitor/firewall/session
+```
 
-# Firewall
+**Configuration (GET, POST, PUT, DELETE):**
+```
+/api/v2/cmdb/system/interface
+/api/v2/cmdb/system/global
 /api/v2/cmdb/firewall/address
+/api/v2/cmdb/firewall/addrgrp
 /api/v2/cmdb/firewall/policy
 /api/v2/cmdb/firewall/service/custom
-
-# Routing
 /api/v2/cmdb/router/static
-/api/v2/monitor/router/ipv4
+```
+
+**Logs (GET only):**
+```
+/api/v2/log/memory/filter
+/api/v2/log/disk/filter
 ```
 
 </details>

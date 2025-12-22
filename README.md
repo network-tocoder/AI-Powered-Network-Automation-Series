@@ -21,7 +21,7 @@ This series takes you from zero to hero in network automation. Build a complete 
 |---|-------|-------|---------|
 | 1 | [EVE-NG Installation](#video-1-eve-ng-installation--virtual-lab-setup) | EVE-NG, Virtual Lab Setup | [▶️ Watch](https://www.youtube.com/watch?v=ABNOS7GypxA) |
 | 2 | [Build Automation Environment](#video-2-build-automation-environment-inside-eve-ng) | Linux, Ansible, VS Code | [▶️ Watch](https://www.youtube.com/watch?v=NPq7AjCguBY) |
-| 3 | [Git Workflow](#video-3-git-workflow-for-network-engineers) | Git, GitHub, Version Control | [▶️ Watch](https://www.youtube.com/watch?v=VIDEO-3-ID) |
+| 3 | [Git Workflow](#video-3-git-workflow-for-network-engineers) | Git, GitHub, Version Control | [▶️ Watch](https://www.youtube.com/watch?v=vykDi7PFeW0) |
 | 4 | [Deploy FortiGate](#video-4-deploy-fortigate-firewall-on-eve-ng) | FortiGate, EVE-NG | [▶️ Watch](https://www.youtube.com/watch?v=8W9OJAP773s) |
 | 5 | [FortiGate + Ansible](#video-5-fortigate-automation-using-ansible) | Ansible, Vault, Playbooks | [▶️ Watch](https://www.youtube.com/watch?v=3VL-JRIJT8M) |
 | 6 | [FortiGate + REST API](#video-6-fortigate-automation-using-rest-api) | REST API, Postman | [▶️ Watch](https://www.youtube.com/watch?v=Eqy4q9SsmtE) |

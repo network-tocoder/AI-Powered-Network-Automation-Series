@@ -1,9 +1,18 @@
-# 🚀 Network Automation Series
+<![CDATA[<!-- Banner -->
+<p align="center">
+  <img src="./assets/banner.jpg" alt="Network Coder Banner" width="100%">
+</p>
 
-Welcome to my Network Automation learning journey! This repository contains all the commands, configurations, and resources from my video tutorials.
+<h1 align="center">🚀 Network Automation Series</h1>
 
-[![YouTube](https://img.shields.io/badge/YouTube-NetworkCoder-red?style=for-the-badge&logo=youtube)](https://youtube.com/@YourChannel)
-[![GitHub](https://img.shields.io/badge/GitHub-Follow-black?style=for-the-badge&logo=github)](https://github.com/YourUsername)
+<p align="center">
+  <strong>Network | AI | Tool Integration | Virtual LAB | Automation</strong>
+</p>
+
+<p align="center">
+  <a href="https://youtube.com/@NetworkCoder"><img src="https://img.shields.io/badge/YouTube-NetworkCoder-red?style=for-the-badge&logo=youtube" alt="YouTube"></a>
+  <a href="https://github.com/NetworkCoder"><img src="https://img.shields.io/badge/GitHub-Follow-black?style=for-the-badge&logo=github" alt="GitHub"></a>
+</p>
 
 ---
 
@@ -11,7 +20,7 @@ Welcome to my Network Automation learning journey! This repository contains all 
 
 | # | Video | Topic | Resources |
 |---|-------|-------|-----------|
-| 1 | Coming Soon | TBD | [📁 Folder](./video-01/) |
+| 1 | [EVE-NG Installation](#video-1-eve-ng-installation--first-virtual-lab) | EVE-NG, Virtual Lab Setup | [📁 Folder](./video-01/) |
 | 2 | Coming Soon | TBD | [📁 Folder](./video-02/) |
 | 3 | Coming Soon | TBD | [📁 Folder](./video-03/) |
 | 4 | Coming Soon | TBD | [📁 Folder](./video-04/) |
@@ -23,11 +32,191 @@ Welcome to my Network Automation learning journey! This repository contains all 
 
 ## 🛠️ Tech Stack
 
-![Docker](https://img.shields.io/badge/Docker-2496ED?style=flat-square&logo=docker&logoColor=white)
-![Ansible](https://img.shields.io/badge/Ansible-EE0000?style=flat-square&logo=ansible&logoColor=white)
-![Python](https://img.shields.io/badge/Python-3776AB?style=flat-square&logo=python&logoColor=white)
-![NetBox](https://img.shields.io/badge/NetBox-0078D4?style=flat-square&logo=netbox&logoColor=white)
-![FortiGate](https://img.shields.io/badge/FortiGate-EE3124?style=flat-square&logo=fortinet&logoColor=white)
+<p align="center">
+  <img src="https://img.shields.io/badge/EVE--NG-00A98F?style=for-the-badge&logo=vmware&logoColor=white" alt="EVE-NG">
+  <img src="https://img.shields.io/badge/Docker-2496ED?style=for-the-badge&logo=docker&logoColor=white" alt="Docker">
+  <img src="https://img.shields.io/badge/Ansible-EE0000?style=for-the-badge&logo=ansible&logoColor=white" alt="Ansible">
+  <img src="https://img.shields.io/badge/Python-3776AB?style=for-the-badge&logo=python&logoColor=white" alt="Python">
+  <img src="https://img.shields.io/badge/NetBox-0078D4?style=for-the-badge&logo=buffer&logoColor=white" alt="NetBox">
+  <img src="https://img.shields.io/badge/FortiGate-EE3124?style=for-the-badge&logo=fortinet&logoColor=white" alt="FortiGate">
+  <img src="https://img.shields.io/badge/Cisco-1BA0D7?style=for-the-badge&logo=cisco&logoColor=white" alt="Cisco">
+</p>
+
+---
+
+## Video 1: EVE-NG Installation & First Virtual Lab
+
+### 📋 Overview
+
+Complete guide to installing EVE-NG (Emulated Virtual Environment - Next Generation) and creating your first virtual network lab. EVE-NG allows you to emulate real network devices for learning, testing, and development.
+
+### 🎯 What You'll Learn
+
+- Download and install EVE-NG
+- Configure EVE-NG virtual machine
+- Access EVE-NG web interface
+- Create your first lab topology
+- Add and connect network devices
+
+### 💻 System Requirements
+
+| Component | Minimum | Recommended |
+|-----------|---------|-------------|
+| CPU | 4 Cores (VT-x/AMD-V enabled) | 8+ Cores |
+| RAM | 8 GB | 16+ GB |
+| Storage | 50 GB | 100+ GB SSD |
+| Hypervisor | VMware/VirtualBox/Bare Metal | VMware Workstation Pro |
+
+### 💻 Commands
+
+<details>
+<summary><b>1. Download EVE-NG</b></summary>
+
+```bash
+# Download EVE-NG Community ISO/OVA from:
+# https://www.eve-ng.net/index.php/download/
+
+# Or use wget (check for latest version)
+wget https://www.eve-ng.net/download/eve-ng-community.ova
+```
+
+</details>
+
+<details>
+<summary><b>2. Initial Setup After Boot</b></summary>
+
+```bash
+# Default credentials
+Username: root
+Password: eve
+
+# The setup wizard will guide you through:
+# - Hostname configuration
+# - Domain name
+# - Network configuration (DHCP or Static IP)
+# - Root password change
+```
+
+</details>
+
+<details>
+<summary><b>3. Update EVE-NG</b></summary>
+
+```bash
+# Update system packages
+apt update && apt upgrade -y
+
+# Fix any broken packages
+apt --fix-broken install
+```
+
+</details>
+
+<details>
+<summary><b>4. Access Web Interface</b></summary>
+
+```bash
+# Find your EVE-NG IP address
+ip addr show
+
+# Or
+hostname -I
+
+# Access in browser:
+# http://YOUR-EVE-NG-IP
+
+# Default web credentials:
+# Username: admin
+# Password: eve
+```
+
+</details>
+
+<details>
+<summary><b>5. Install Windows Client Pack (Optional)</b></summary>
+
+```bash
+# Download from EVE-NG website
+# Windows Integration Pack includes:
+# - Wireshark integration
+# - PuTTY/SecureCRT integration
+# - VNC viewer
+# - RDP client
+```
+
+</details>
+
+<details>
+<summary><b>6. Upload Device Images</b></summary>
+
+```bash
+# Connect via SFTP/SCP
+# Upload images to appropriate folders:
+
+# Cisco IOS/IOL
+/opt/unetlab/addons/iol/bin/
+
+# Cisco VIRL/QEMU images
+/opt/unetlab/addons/qemu/
+
+# Fix permissions after upload
+/opt/unetlab/wrappers/unl_wrapper -a fixpermissions
+```
+
+</details>
+
+<details>
+<summary><b>7. Useful EVE-NG Commands</b></summary>
+
+```bash
+# Check EVE-NG service status
+systemctl status eve-ng
+
+# Restart EVE-NG services
+systemctl restart eve-ng
+
+# Fix permissions (run after adding images)
+/opt/unetlab/wrappers/unl_wrapper -a fixpermissions
+
+# Check running labs
+eve-ng ps
+
+# Stop all running nodes
+/opt/unetlab/wrappers/unl_wrapper -a stopall
+
+# View logs
+tail -f /var/log/syslog
+```
+
+</details>
+
+### 🖥️ Creating Your First Lab
+
+1. **Login** to EVE-NG web interface
+2. **Create New Lab**: Click `Add new lab` → Enter lab name
+3. **Add Nodes**: Right-click → `Node` → Select device type
+4. **Connect Devices**: Click on node interface → Drag to another node
+5. **Start Nodes**: Select all → Right-click → `Start`
+6. **Access Console**: Double-click on node to open console
+
+### 📁 Project Structure
+
+```
+video-01/
+├── README.md
+├── lab-topology.png
+└── configs/
+    ├── R1-initial.cfg
+    ├── R2-initial.cfg
+    └── SW1-initial.cfg
+```
+
+### 🔗 Resources
+
+- [EVE-NG Official Website](https://www.eve-ng.net/)
+- [EVE-NG Documentation](https://www.eve-ng.net/index.php/documentation/)
+- [EVE-NG Community Forum](https://www.eve-ng.net/forum/)
+- [EVE-NG Cookbook](https://www.eve-ng.net/index.php/documentation/howtos/)
 
 ---
 
@@ -323,14 +512,17 @@ fortios_api_token: your-api-token-here
 | NetBox | [netbox.dev](https://netbox.dev/) |
 | Ansible Docs | [docs.ansible.com](https://docs.ansible.com/) |
 | Docker Docs | [docs.docker.com](https://docs.docker.com/) |
+| Fortinet Docs | [docs.fortinet.com](https://docs.fortinet.com/) |
 
 ---
 
 ## 🤝 Connect With Me
 
-- 📺 [YouTube - NetworkCoder](https://youtube.com/@YourChannel)
-- 💼 [LinkedIn](https://linkedin.com/in/YourProfile)
-- 🐦 [Twitter](https://twitter.com/YourHandle)
+<p align="center">
+  <a href="https://youtube.com/@NetworkCoder"><img src="https://img.shields.io/badge/YouTube-FF0000?style=for-the-badge&logo=youtube&logoColor=white" alt="YouTube"></a>
+  <a href="https://linkedin.com/in/YourProfile"><img src="https://img.shields.io/badge/LinkedIn-0077B5?style=for-the-badge&logo=linkedin&logoColor=white" alt="LinkedIn"></a>
+  <a href="https://twitter.com/YourHandle"><img src="https://img.shields.io/badge/Twitter-1DA1F2?style=for-the-badge&logo=twitter&logoColor=white" alt="Twitter"></a>
+</p>
 
 ---
 
@@ -340,4 +532,7 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 ---
 
-⭐ **If you find this helpful, please star the repo!** ⭐
+<p align="center">
+  ⭐ <strong>If you find this helpful, please star the repo!</strong> ⭐
+</p>
+]]>

@@ -9,17 +9,26 @@
 
 ---
 
+## 🎓 What You'll Learn
+
+This series takes you from zero to hero in network automation. Build a complete virtual lab, automate firewalls, deploy NetBox for infrastructure management, and integrate everything with modern DevOps tools.
+
+---
+
 ## 📺 Video Index
 
-| # | Video | Topic | Resources |
-|---|-------|-------|-----------|
-| 1 | [EVE-NG Installation](#video-1-eve-ng-installation--first-virtual-lab) | EVE-NG, Virtual Lab Setup | [📁 Folder](./video-01/) |
-| 2 | Coming Soon | TBD | [📁 Folder](./video-02/) |
-| 3 | Coming Soon | TBD | [📁 Folder](./video-03/) |
-| 4 | Coming Soon | TBD | [📁 Folder](./video-04/) |
-| 5 | Coming Soon | TBD | [📁 Folder](./video-05/) |
-| 6 | [NetBox Docker Setup](#video-6-netbox-docker-installation) | NetBox, Docker, EVE-NG | [📁 Folder](./video-06/) |
-| 7 | [Ansible FortiGate Automation](#video-7-ansible-fortigate-automation) | Ansible, FortiGate, Vault | [📁 Folder](./video-07/) |
+| # | Video | Topic | YouTube |
+|---|-------|-------|---------|
+| 1 | [EVE-NG Installation](#video-1-eve-ng-installation--virtual-lab-setup) | EVE-NG, Virtual Lab Setup | [▶️ Watch](https://www.youtube.com/watch?v=ABNOS7GypxA) |
+| 2 | [Build Automation Environment](#video-2-build-automation-environment-inside-eve-ng) | Linux, Ansible, VS Code | [▶️ Watch](https://www.youtube.com/watch?v=NPq7AjCguBY) |
+| 3 | [Git Workflow](#video-3-git-workflow-for-network-engineers) | Git, GitHub, Version Control | [▶️ Watch](https://www.youtube.com/watch?v=VIDEO-3-ID) |
+| 4 | [Deploy FortiGate](#video-4-deploy-fortigate-firewall-on-eve-ng) | FortiGate, EVE-NG | [▶️ Watch](https://www.youtube.com/watch?v=8W9OJAP773s) |
+| 5 | [FortiGate + Ansible](#video-5-fortigate-automation-using-ansible) | Ansible, Vault, Playbooks | [▶️ Watch](https://www.youtube.com/watch?v=3VL-JRIJT8M) |
+| 6 | [FortiGate + REST API](#video-6-fortigate-automation-using-rest-api) | REST API, Postman | [▶️ Watch](https://www.youtube.com/watch?v=Eqy4q9SsmtE) |
+| 7 | [NetBox + Docker](#video-7-netbox-installation-using-docker) | NetBox, Docker Compose | [▶️ Watch](https://www.youtube.com/watch?v=OGQGly7NIFY) |
+| 8 | [NetBox Dynamic Inventory](#video-8-netbox-dynamic-inventory---core-concepts) | ORB, DIODE, Architecture | [▶️ Watch](https://www.youtube.com/watch?v=JZ-jDCT8mQY) |
+| 9 | [NetBox Auto-Discovery](#video-9-netbox-auto-discovery---complete-setup-guide) | DIODE, ORB Agent, OAuth | [▶️ Watch](https://www.youtube.com/watch?v=DODzEsMTmKQ) |
+| 10 | [pyATS + NetBox](#video-10-pyats--netbox-integration) | pyATS, Network Testing | [▶️ Watch](https://www.youtube.com/watch?v=V_PmWxC2QDA) |
 
 ---
 
@@ -35,19 +44,19 @@
 
 ---
 
-## Video 1: EVE-NG Installation & First Virtual Lab
+## Video 1: EVE-NG Installation & Virtual Lab Setup
+
+[▶️ Watch on YouTube](https://www.youtube.com/watch?v=ABNOS7GypxA)
 
 ### 📋 Overview
 
-Complete guide to installing EVE-NG (Emulated Virtual Environment - Next Generation) and creating your first virtual network lab.
+Install EVE-NG on VMware Workstation and build your first virtual network topology.
 
 ### 🎯 What You'll Learn
 
-- Download and install EVE-NG
-- Configure EVE-NG virtual machine
-- Access EVE-NG web interface
-- Create your first lab topology
-- Add and connect network devices
+- Install EVE-NG on VMware Workstation
+- Build your first virtual network topology
+- Configure network devices for automation
 
 ### 💻 System Requirements
 
@@ -56,7 +65,7 @@ Complete guide to installing EVE-NG (Emulated Virtual Environment - Next Generat
 | CPU | 4 Cores (VT-x/AMD-V enabled) | 8+ Cores |
 | RAM | 8 GB | 16+ GB |
 | Storage | 50 GB | 100+ GB SSD |
-| Hypervisor | VMware/VirtualBox/Bare Metal | VMware Workstation Pro |
+| Hypervisor | VMware/VirtualBox | VMware Workstation Pro |
 
 ### 💻 Commands
 
@@ -163,135 +172,269 @@ systemctl restart eve-ng
 
 ---
 
-## Video 6: NetBox Docker Installation
+## Video 2: Build Automation Environment Inside EVE-NG
+
+[▶️ Watch on YouTube](https://www.youtube.com/watch?v=NPq7AjCguBY)
 
 ### 📋 Overview
 
-Step-by-step guide to install NetBox using Docker Compose on Ubuntu/EVE-NG.
+Deploy a Linux node inside EVE-NG, install Ansible, and integrate VS Code for a professional automation workflow.
+
+### 🎯 What You'll Learn
+
+- Deploy Linux node in EVE-NG
+- Install Ansible for network automation
+- Integrate VS Code for professional workflow
 
 ### 💻 Commands
 
 <details>
-<summary>1. Update System & Install Docker</summary>
+<summary>1. Install Ansible</summary>
 
 ```bash
-# Install OpenSSH Server
+# Update system
+sudo apt update && sudo apt upgrade -y
+
+# Install Ansible
+sudo apt install ansible -y
+
+# Verify installation
+ansible --version
+```
+
+</details>
+
+<details>
+<summary>2. Install Python & pip</summary>
+
+```bash
+# Install Python and pip
+sudo apt install python3 python3-pip -y
+
+# Verify installation
+python3 --version
+pip3 --version
+```
+
+</details>
+
+<details>
+<summary>3. VS Code Remote SSH Setup</summary>
+
+```bash
+# Install OpenSSH Server on Linux node
 sudo apt install openssh-server -y
 
-# Update system
-sudo apt update && upgrade -y
+# Start SSH service
+sudo systemctl start ssh
+sudo systemctl enable ssh
 
-# Install Docker + Docker Compose
-sudo apt install -y docker.io docker-compose
+# Check SSH status
+sudo systemctl status ssh
 
-# Start Docker service
-sudo systemctl start docker
-
-# Verify Docker is running
-systemctl is-active docker
-
-# Check versions
-docker --version
-docker-compose --version
-```
-
-</details>
-
-<details>
-<summary>2. Configure Docker Permissions</summary>
-
-```bash
-# Add user to docker group
-sudo usermod -aG docker $USER
-
-# Confirm group entry
-getent group docker
-```
-
-</details>
-
-<details>
-<summary>3. Download & Configure NetBox</summary>
-
-```bash
-# Clone NetBox Docker repository
-git clone -b release https://github.com/netbox-community/netbox-docker.git
-
-# Enter directory
-cd netbox-docker
-
-# Create override file for port mapping
-cp docker-compose.override.yml.example docker-compose.override.yml
-```
-
-</details>
-
-<details>
-<summary>4. Start NetBox</summary>
-
-```bash
-# Pull images
-docker-compose pull
-
-# Start NetBox stack
-docker-compose up -d
-
-# Check status
-docker-compose ps
-
-# Verify port listening
-ss -tuln | grep :8000
-
-# Test web access
-curl -I http://localhost:8000
-```
-
-</details>
-
-<details>
-<summary>5. Troubleshooting</summary>
-
-```bash
-# Restart NetBox container
-sudo docker-compose restart netbox
-
-# Stop everything
-docker-compose down
-
-# View logs
-docker-compose logs
-docker-compose logs netbox
-docker-compose logs postgres
-
-# Nuclear reset (removes all data!)
-docker-compose down -v
-docker-compose pull
-docker-compose up -d
-```
-
-</details>
-
-<details>
-<summary>6. Create Superuser</summary>
-
-```bash
-docker-compose exec netbox /opt/netbox/netbox/manage.py createsuperuser
+# Get IP address for VS Code connection
+ip addr show
 ```
 
 </details>
 
 ### 🔗 Resources
 
-- [NetBox Documentation](https://docs.netbox.dev/)
-- [NetBox Docker GitHub](https://github.com/netbox-community/netbox-docker)
+- [Ansible Installation Guide](https://docs.ansible.com/ansible/latest/installation_guide/)
+- [VS Code Remote SSH](https://code.visualstudio.com/docs/remote/ssh)
 
 ---
 
-## Video 7: Ansible FortiGate Automation
+## Video 3: Git Workflow for Network Engineers
+
+[▶️ Watch on YouTube](https://www.youtube.com/watch?v=VIDEO-3-ID)
 
 ### 📋 Overview
 
-Learn how to automate FortiGate firewalls using Ansible with secure credential storage.
+Learn Git version control essentials and push your Ansible projects to GitHub.
+
+### 🎯 What You'll Learn
+
+- Complete Git workflow explained
+- Push Ansible projects to GitHub
+- Version control for network automation
+
+### 💻 Commands
+
+<details>
+<summary>1. Install & Configure Git</summary>
+
+```bash
+# Install Git
+sudo apt install git -y
+
+# Configure Git
+git config --global user.name "Your Name"
+git config --global user.email "your.email@example.com"
+
+# Verify configuration
+git config --list
+```
+
+</details>
+
+<details>
+<summary>2. Initialize Repository</summary>
+
+```bash
+# Initialize new repository
+git init
+
+# Add all files
+git add .
+
+# First commit
+git commit -m "Initial commit"
+```
+
+</details>
+
+<details>
+<summary>3. Push to GitHub</summary>
+
+```bash
+# Add remote origin
+git remote add origin https://github.com/username/repo.git
+
+# Push to main branch
+git push -u origin main
+```
+
+</details>
+
+<details>
+<summary>4. Common Git Commands</summary>
+
+```bash
+# Check status
+git status
+
+# View commit history
+git log --oneline
+
+# Create new branch
+git checkout -b feature-branch
+
+# Merge branch
+git merge feature-branch
+
+# Pull latest changes
+git pull origin main
+```
+
+</details>
+
+### 🔗 Resources
+
+- [Git Documentation](https://git-scm.com/doc)
+- [GitHub Guides](https://guides.github.com/)
+
+---
+
+## Video 4: Deploy FortiGate Firewall on EVE-NG
+
+[▶️ Watch on YouTube](https://www.youtube.com/watch?v=8W9OJAP773s)
+
+### 📋 Overview
+
+Install and configure FortiGate firewall in your EVE-NG virtual lab.
+
+### 🎯 What You'll Learn
+
+- FortiGate installation in virtual lab
+- Network security device configuration
+- Integration with automation stack
+
+### 💻 Commands
+
+<details>
+<summary>1. Upload FortiGate Image</summary>
+
+```bash
+# Upload FortiGate qcow2 image via SFTP to:
+/opt/unetlab/addons/qemu/fortinet-FGT/
+
+# Fix permissions
+/opt/unetlab/wrappers/unl_wrapper -a fixpermissions
+```
+
+</details>
+
+<details>
+<summary>2. FortiGate Initial Configuration</summary>
+
+```bash
+# Default credentials
+Username: admin
+Password: (blank - press Enter)
+
+# Set new password
+config system admin
+    edit admin
+        set password YourNewPassword
+    next
+end
+
+# Configure management interface
+config system interface
+    edit port1
+        set ip 192.168.1.111/24
+        set allowaccess ping https ssh http
+    next
+end
+```
+
+</details>
+
+<details>
+<summary>3. Enable API Access</summary>
+
+```bash
+# Create API admin user
+config system api-user
+    edit "api-admin"
+        set accprofile "super_admin"
+        set vdom "root"
+        config trusthost
+            edit 1
+                set ipv4-trusthost 192.168.1.0/24
+            next
+        end
+    next
+end
+
+# Generate API token (from GUI)
+# System > Administrators > api-admin > Regenerate
+```
+
+</details>
+
+### 🔗 Resources
+
+- [FortiGate Documentation](https://docs.fortinet.com/product/fortigate)
+- [EVE-NG FortiGate Setup](https://www.eve-ng.net/index.php/documentation/howtos/)
+
+---
+
+## Video 5: FortiGate Automation Using Ansible
+
+[▶️ Watch on YouTube](https://www.youtube.com/watch?v=3VL-JRIJT8M)
+
+### 📋 Overview
+
+Automate FortiGate firewalls using Ansible with secure credential storage via Ansible Vault.
+
+### 🎯 What You'll Learn
+
+- Install Ansible Collections for FortiGate
+- Ansible Vault Setup
+- Demo Playbook 1 - System Information Check
+- Demo Playbook 2 - Deploy Firewall Policy
 
 ### 📁 Project Structure
 
@@ -397,6 +540,371 @@ ansible_httpapi_port=443
 
 ---
 
+## Video 6: FortiGate Automation Using REST API
+
+[▶️ Watch on YouTube](https://www.youtube.com/watch?v=Eqy4q9SsmtE)
+
+### 📋 Overview
+
+Automate FortiGate using REST API with Postman and VS Code integration.
+
+### 🎯 What You'll Learn
+
+- REST API automation with Postman
+- VS Code integration for API testing
+- GitHub workflow for firewall configs
+
+### 💻 Commands
+
+<details>
+<summary>1. Get System Status (cURL)</summary>
+
+```bash
+# Get system status
+curl -k -X GET "https://192.168.1.111/api/v2/monitor/system/status" \
+  -H "Authorization: Bearer YOUR_API_TOKEN"
+```
+
+</details>
+
+<details>
+<summary>2. Get Firewall Policies</summary>
+
+```bash
+# List all firewall policies
+curl -k -X GET "https://192.168.1.111/api/v2/cmdb/firewall/policy" \
+  -H "Authorization: Bearer YOUR_API_TOKEN"
+```
+
+</details>
+
+<details>
+<summary>3. Create Firewall Policy</summary>
+
+```bash
+# Create new policy
+curl -k -X POST "https://192.168.1.111/api/v2/cmdb/firewall/policy" \
+  -H "Authorization: Bearer YOUR_API_TOKEN" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "name": "Allow-Web",
+    "srcintf": [{"name": "port1"}],
+    "dstintf": [{"name": "port2"}],
+    "srcaddr": [{"name": "all"}],
+    "dstaddr": [{"name": "all"}],
+    "service": [{"name": "HTTP"}, {"name": "HTTPS"}],
+    "action": "accept",
+    "status": "enable"
+  }'
+```
+
+</details>
+
+### 🔗 Resources
+
+- [FortiGate REST API Guide](https://docs.fortinet.com/document/fortigate/7.0.0/administration-guide/940602/rest-api)
+- [Postman Download](https://www.postman.com/downloads/)
+
+---
+
+## Video 7: NetBox Installation Using Docker
+
+[▶️ Watch on YouTube](https://www.youtube.com/watch?v=OGQGly7NIFY)
+
+### 📋 Overview
+
+Deploy NetBox with Docker Compose for IPAM and DCIM management.
+
+### 🎯 What You'll Learn
+
+- Deploy NetBox with Docker Compose
+- Complete setup and configuration
+- Prepare for auto-discovery integration
+
+### 💻 Commands
+
+<details>
+<summary>1. Install Docker</summary>
+
+```bash
+# Install Docker + Docker Compose
+sudo apt install -y docker.io docker-compose
+
+# Start Docker service
+sudo systemctl start docker
+sudo systemctl enable docker
+
+# Add user to docker group
+sudo usermod -aG docker $USER
+
+# Verify installation
+docker --version
+docker-compose --version
+```
+
+</details>
+
+<details>
+<summary>2. Download & Configure NetBox</summary>
+
+```bash
+# Clone NetBox Docker repository
+git clone -b release https://github.com/netbox-community/netbox-docker.git
+
+# Enter directory
+cd netbox-docker
+
+# Create override file for port mapping
+cp docker-compose.override.yml.example docker-compose.override.yml
+```
+
+</details>
+
+<details>
+<summary>3. Start NetBox</summary>
+
+```bash
+# Pull images
+docker-compose pull
+
+# Start NetBox stack
+docker-compose up -d
+
+# Check status
+docker-compose ps
+
+# Verify port listening
+ss -tuln | grep :8000
+```
+
+</details>
+
+<details>
+<summary>4. Troubleshooting</summary>
+
+```bash
+# View logs
+docker-compose logs
+docker-compose logs netbox
+
+# Restart NetBox
+docker-compose restart netbox
+
+# Nuclear reset (removes all data!)
+docker-compose down -v
+docker-compose pull
+docker-compose up -d
+```
+
+</details>
+
+<details>
+<summary>5. Create Superuser</summary>
+
+```bash
+docker-compose exec netbox /opt/netbox/netbox/manage.py createsuperuser
+```
+
+</details>
+
+### 🔗 Resources
+
+- [NetBox Documentation](https://docs.netbox.dev/)
+- [NetBox Docker GitHub](https://github.com/netbox-community/netbox-docker)
+
+---
+
+## Video 8: NetBox Dynamic Inventory - Core Concepts
+
+[▶️ Watch on YouTube](https://www.youtube.com/watch?v=JZ-jDCT8mQY)
+
+### 📋 Overview
+
+Understand the architecture of auto-discovery stack with ORB, DIODE, and NetBox.
+
+### 🎯 What You'll Learn
+
+- Architecture overview of auto-discovery stack
+- How ORB, DIODE, and NetBox work together
+- Understanding the data flow
+
+### 🏗️ Architecture
+
+```
+┌─────────────┐     ┌─────────────┐     ┌─────────────┐
+│  Network    │     │    ORB      │     │   DIODE     │
+│  Devices    │────▶│   Agent     │────▶│   Server    │
+└─────────────┘     └─────────────┘     └─────────────┘
+                                              │
+                                              ▼
+                                        ┌─────────────┐
+                                        │   NetBox    │
+                                        │   (DCIM)    │
+                                        └─────────────┘
+```
+
+### 🔗 Resources
+
+- [NetBox DIODE Plugin](https://github.com/netboxlabs/diode-netbox-plugin)
+- [ORB Agent Documentation](https://github.com/netboxlabs/orb-agent)
+
+---
+
+## Video 9: NetBox Auto-Discovery - Complete Setup Guide
+
+[▶️ Watch on YouTube](https://www.youtube.com/watch?v=DODzEsMTmKQ)
+
+### 📋 Overview
+
+Complete setup guide for NetBox auto-discovery with DIODE and ORB Agent.
+
+### 🎯 What You'll Learn
+
+- Deploy DIODE Server with Docker
+- Install and configure NetBox DIODE Plugin
+- Setup ORB Agent with OAuth authentication
+- Troubleshoot common issues
+- Live auto-discovery demonstration
+
+### 💻 Commands
+
+<details>
+<summary>1. Deploy DIODE Server</summary>
+
+```bash
+# Clone DIODE repository
+git clone https://github.com/netboxlabs/diode.git
+cd diode
+
+# Start DIODE with Docker Compose
+docker-compose up -d
+
+# Verify DIODE is running
+docker-compose ps
+```
+
+</details>
+
+<details>
+<summary>2. Install NetBox DIODE Plugin</summary>
+
+```bash
+# Add to NetBox docker-compose.override.yml
+# Under netbox service, add:
+#   PLUGINS: "netbox_diode"
+
+# Restart NetBox
+docker-compose restart netbox
+```
+
+</details>
+
+<details>
+<summary>3. Configure ORB Agent</summary>
+
+```bash
+# Download ORB Agent
+# Configure orb-agent.yaml with:
+# - NetBox URL
+# - DIODE Server URL
+# - OAuth credentials
+# - Target network devices
+
+# Start ORB Agent
+./orb-agent run -c orb-agent.yaml
+```
+
+</details>
+
+### 🔗 Resources
+
+- [DIODE GitHub](https://github.com/netboxlabs/diode)
+- [NetBox DIODE Plugin](https://github.com/netboxlabs/diode-netbox-plugin)
+
+---
+
+## Video 10: pyATS + NetBox Integration
+
+[▶️ Watch on YouTube](https://www.youtube.com/watch?v=V_PmWxC2QDA)
+
+### 📋 Overview
+
+Network testing with pyATS and automated inventory sync with NetBox.
+
+### 🎯 What You'll Learn
+
+- Network testing with pyATS
+- Automated inventory sync
+- Integration workflow
+
+### 💻 Commands
+
+<details>
+<summary>1. Install pyATS</summary>
+
+```bash
+# Create virtual environment
+python3 -m venv pyats-env
+source pyats-env/bin/activate
+
+# Install pyATS
+pip install pyats[full]
+
+# Verify installation
+pyats version check
+```
+
+</details>
+
+<details>
+<summary>2. Create Testbed File</summary>
+
+```yaml
+# testbed.yaml
+testbed:
+  name: Network-Lab
+
+devices:
+  router1:
+    os: ios
+    type: router
+    connections:
+      defaults:
+        class: unicon.Unicon
+      ssh:
+        protocol: ssh
+        ip: 192.168.1.10
+    credentials:
+      default:
+        username: admin
+        password: cisco123
+```
+
+</details>
+
+<details>
+<summary>3. Run pyATS Tests</summary>
+
+```bash
+# Connect to device
+pyats shell --testbed testbed.yaml
+
+# Run a job
+pyats run job my_job.py --testbed testbed.yaml
+
+# Parse command output
+pyats parse "show version" --testbed testbed.yaml --device router1
+```
+
+</details>
+
+### 🔗 Resources
+
+- [pyATS Documentation](https://developer.cisco.com/docs/pyats/)
+- [pyATS GitHub](https://github.com/CiscoTestAutomation/pyats)
+
+---
+
 ## 📚 Additional Resources
 
 | Resource | Link |
@@ -406,6 +914,7 @@ ansible_httpapi_port=443
 | Ansible Docs | [docs.ansible.com](https://docs.ansible.com/) |
 | Docker Docs | [docs.docker.com](https://docs.docker.com/) |
 | Fortinet Docs | [docs.fortinet.com](https://docs.fortinet.com/) |
+| pyATS Docs | [developer.cisco.com/pyats](https://developer.cisco.com/docs/pyats/) |
 
 ---
 

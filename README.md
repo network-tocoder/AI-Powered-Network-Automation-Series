@@ -1,7 +1,6 @@
+# <p align="center"> 🌐 `Network Automation Series` </p>
 <p align="center">
-  <a href="https://git.io/typing-svg">
-    <img src="https://readme-typing-svg.herokuapp.com?font=Fira+Code&size=35&pause=1000&color=00CED1&center=true&vCenter=true&width=600&lines=Network+Automation+Series;Building+Intent-Based+Networks;AI-Powered+Networking+with+MCP" alt="Typing SVG" />
-  </a>
+  <img src="https://img.shields.io/badge/Next_Level-Infrastructure_as_Code-00CED1?style=for-the-badge&logo=ansible&logoColor=white" />
 </p>
 
 <p align="center">

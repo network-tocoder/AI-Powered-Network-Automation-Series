@@ -3,6 +3,7 @@
     <img src="https://readme-typing-svg.herokuapp.com?font=Fira+Code&weight=bold&size=45&pause=1000&color=00FFFF&center=true&vCenter=true&width=1200&lines=Network+Automation+Series;Building+Intent-Based+Networks;AI-Powered+Networking+with+MCP" alt="Network Automation Series" />
   </a>
 </p>
+
 <p align="center">
   <img src="assets/Series Thumpnail.jpg" alt="Network Coder Banner" width="800">
 </p>

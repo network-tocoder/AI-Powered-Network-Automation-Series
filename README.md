@@ -5,7 +5,7 @@
 </p>
 
 <p align="center">
-  <img src="assets/Series Thumpnail.jpg" alt="Network Coder Banner" width="400">
+  <img src="assets/Series Thumpnail.jpg" alt="Network Coder Banner" width="800">
 </p>
 
 <p align="center">

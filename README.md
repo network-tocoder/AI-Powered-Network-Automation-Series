@@ -577,16 +577,24 @@ FortiGate installation in virtual lab and network security device configuration.
 ```bash
 # On EVE-NG server
 # Create directory for FortiGate
-mkdir -p /opt/unetlab/addons/qemu/fortinet-FGT-v7-build0000/
+mkdir -p /opt/unetlab/addons/qemu/fortinet-FGT-v7.2.12
 
 # Upload FortiGate image via WinSCP/SCP
+
+# Navigate to directory
+cd /opt/unetlab/addons/qemu/fortinet-FGT-v7.2.12
+
+# Unzip image
+unzip FGT_VM64_KVM-v7.2.12.zip
+
 # Rename to virtioa.qcow2
+mv fortios.qcow2 virtioa.qcow2
 
 # Fix permissions
 /opt/unetlab/wrappers/unl_wrapper -a fixpermissions
 
 # Verify
-ls -la /opt/unetlab/addons/qemu/fortinet-FGT-v7-build0000/
+ls -la 
 ```
 
 </details>

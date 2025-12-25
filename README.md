@@ -409,6 +409,40 @@ ssh -T git@github.com
 </details>
 
 <details>
+<summary>3a. Fixing SSH Issues (optional) & update DNS </summary>
+
+```bash
+# Test SSH access from Ansible Node - ssh ansible@192.168.1.101 (Incase issue - add this content)
+vim ~/.ssh/config
+
+Host vIOS-R*
+ KexAlgorithms +diffie-hellman-group14-sha1,diffie-hellman-group-exchange-sha1
+ HostKeyAlgorithms +ssh-rsa
+ StrictHostKeyChecking no
+
+
+
+# Update DNS entries
+sudo vim /etc/hosts
+Add these lines at the end:
+
+192.168.1.10    vIOS-R1
+192.168.1.11    vIOS-R2
+192.168.1.12    vIOS-R3
+
+# Check status
+git status
+
+# Add all files
+git add .
+
+# Create first commit
+git commit -m "Initial commit: Ansible project structure"
+```
+
+</details>
+
+<details>
 <summary>3. Initialize Local Repository</summary>
 
 ```bash

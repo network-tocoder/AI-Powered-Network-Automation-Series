@@ -44,7 +44,11 @@ This series takes you from zero to hero in network automation. Build a complete 
 | 8 | [NetBox Dynamic Inventory](#video-8-netbox-dynamic-inventory---core-concepts-explained) | DIODE, ORB, Architecture | [▶️ YouTube](https://www.youtube.com/watch?v=JZ-jDCT8mQY) |
 | 9 | [NetBox Auto-Discovery](#video-9-netbox-auto-discovery---complete-setup-guide) | DIODE, ORB Agent, OAuth | [▶️ YouTube](https://www.youtube.com/watch?v=DODzEsMTmKQ) |
 | 10 | [pyATS + NetBox](#video-10-pyats--netbox-integration) | pyATS, Testing, NetBox | [▶️ YouTube](https://www.youtube.com/watch?v=V_PmWxC2QDA) |
-| 11 | [NetBox + MCP Integration](#video-11-netbox--mcp-integration) | MCP, Claude Code, AI | [▶️ YouTube](https://www.youtube.com/watch?v=YOUR_VIDEO_ID) |
+| 11 | [MCP Fundamentals](#video-11-mcp-fundamentals---connect-ai-to-network-tools) | MCP Core Concepts, Architecture | [▶️ YouTube](https://www.youtube.com/watch?v=YOUR_VIDEO_ID) |
+| 12 | [NetBox + MCP Hands-On](#video-12-netbox--mcp-hands-on-setup) | Claude Code, NetBox MCP | [▶️ YouTube](https://www.youtube.com/watch?v=YOUR_VIDEO_ID) |
+| 13 | [Custom Device MCP](#video-13-custom-mcp-server---network-device-automation) | Netmiko, SSH, FastMCP | 🔜 Coming Soon |
+| 14 | [Ansible MCP Integration](#video-14-ansible-mcp-integration) | Ansible + Claude | 🔜 Coming Soon |
+| 15 | [pyATS MCP Server](#video-15-pyats-mcp-server) | pyATS + Claude | 🔜 Coming Soon |
 
 ---
 
@@ -2550,20 +2554,195 @@ ls -la archive/
 
 ---
 
-## Video 11: NetBox + MCP Integration
+## Video 11: MCP Fundamentals - Connect AI to Network Tools
 
 [▶️ Watch on YouTube](https://www.youtube.com/watch?v=YOUR_VIDEO_ID)
 
 ### 📋 Overview
 
-Connect Claude AI to NetBox using Model Context Protocol (MCP) for natural language infrastructure queries.
+Understanding MCP (Model Context Protocol) - the universal standard for connecting AI assistants to external tools and data sources. This video covers core concepts, architecture, and connectivity methods.
 
 ### 🎯 What You'll Learn
 
-- What is MCP (Model Context Protocol)
-- MCP architecture and connectivity methods
-- Install Claude Code CLI on Linux
-- Setup NetBox MCP Server
+- What is MCP and why it matters for network engineers
+- MCP architecture: Host, Server, and Resources
+- Connectivity methods: STDIO vs HTTP transport
+- Introduction to FastMCP framework
+- Overview of the MCP mini-series roadmap
+
+### 🏗️ MCP Architecture
+
+```
+┌─────────────────────────────────────────────────────────┐
+│                    MCP ARCHITECTURE                      │
+├─────────────────────────────────────────────────────────┤
+│                                                          │
+│  ┌──────────────┐    Protocol    ┌──────────────┐       │
+│  │  MCP HOST    │◄──────────────►│  MCP SERVER  │       │
+│  │              │                │              │       │
+│  │ Claude Code  │   JSON-RPC     │ NetBox MCP   │       │
+│  │ Claude       │   over         │ Custom MCP   │       │
+│  │ Desktop      │   STDIO/HTTP   │ Any Tool     │       │
+│  └──────────────┘                └──────┬───────┘       │
+│                                         │               │
+│                                         ▼               │
+│                                  ┌──────────────┐       │
+│                                  │  RESOURCES   │       │
+│                                  │              │       │
+│                                  │  NetBox API  │       │
+│                                  │  Database    │       │
+│                                  │  SSH/Devices │       │
+│                                  └──────────────┘       │
+│                                                          │
+└─────────────────────────────────────────────────────────┘
+```
+
+### 📦 MCP Components Explained
+
+| Component | Description | Examples |
+|-----------|-------------|----------|
+| **MCP Host** | The AI application that initiates connections | Claude Code, Claude Desktop, VS Code |
+| **MCP Server** | Bridge that translates AI requests to tool actions | NetBox MCP, Custom Python MCP |
+| **Resources** | Actual data sources and tools | NetBox API, Network Devices, Ansible |
+
+### 🔧 MCP Capabilities
+
+MCP servers expose three types of capabilities:
+
+| Capability | Description | Example |
+|------------|-------------|---------|
+| **Tools** | Functions AI can call | `get_devices()`, `create_ip()`, `run_command()` |
+| **Resources** | Data AI can read | Config files, documentation, inventory |
+| **Prompts** | Pre-built prompt templates | "Analyze network health", "Troubleshoot BGP" |
+
+### 🔌 Connectivity Methods
+
+<details>
+<summary>STDIO Transport (Standard I/O)</summary>
+
+**Best for:** Local development, single-user setups
+
+```
+┌──────────────┐     stdin/stdout      ┌──────────────┐
+│  MCP Host    │◄─────────────────────►│  MCP Server  │
+│ (Claude Code)│      JSON-RPC         │  (Python)    │
+└──────────────┘                       └──────────────┘
+```
+
+**How it works:**
+- Host spawns server as subprocess
+- Communication via stdin/stdout
+- Server runs only when host is active
+- Most common method for local use
+
+**Pros:**
+- Simple setup
+- No network configuration
+- Secure (local only)
+
+**Cons:**
+- Single user only
+- Can't share across machines
+
+</details>
+
+<details>
+<summary>HTTP Transport (Server-Sent Events)</summary>
+
+**Best for:** Shared servers, remote access, team environments
+
+```
+┌──────────────┐       HTTP/SSE        ┌──────────────┐
+│  MCP Host    │◄─────────────────────►│  MCP Server  │
+│  (Browser)   │   (Port 8080)         │  (Running)   │
+└──────────────┘                       └──────────────┘
+```
+
+**How it works:**
+- Server runs independently on a port
+- Multiple clients can connect
+- Uses HTTP with Server-Sent Events
+- Server persists across sessions
+
+**Pros:**
+- Multiple users
+- Remote access
+- Always running
+
+**Cons:**
+- More complex setup
+- Security considerations
+
+</details>
+
+### 🚀 FastMCP Framework
+
+FastMCP makes building MCP servers incredibly easy with Python decorators:
+
+```python
+from fastmcp import FastMCP
+
+# Initialize MCP server
+mcp = FastMCP("Network Automation MCP")
+
+# Expose a function as a tool
+@mcp.tool()
+def get_device_info(device_name: str) -> dict:
+    """Get information about a network device"""
+    # Your code here
+    return device_info
+
+# Expose data as a resource
+@mcp.resource("config://devices")
+def get_device_list() -> str:
+    """List of all managed devices"""
+    return device_inventory
+
+# Create a prompt template
+@mcp.prompt()
+def troubleshoot_prompt(issue: str) -> str:
+    """Generate troubleshooting steps"""
+    return f"Analyze and troubleshoot: {issue}"
+```
+
+**Key Features:**
+- Simple Python decorators
+- Auto-documentation from docstrings
+- Type validation with Python type hints
+- Built-in STDIO and HTTP transports
+
+### 🗺️ MCP Mini-Series Roadmap
+
+| Video | Focus | What You'll Build |
+|-------|-------|-------------------|
+| **11** (This Video) | MCP Fundamentals | Understanding concepts |
+| **12** | NetBox MCP Hands-On | Connect Claude to NetBox |
+| **13** | Custom Device MCP | SSH commands via Claude |
+| **14** | Ansible MCP | Trigger playbooks via Claude |
+| **15** | pyATS MCP | Network testing via Claude |
+
+### 🔗 Resources
+
+- [MCP Protocol Documentation](https://modelcontextprotocol.io/)
+- [FastMCP GitHub](https://github.com/jlowin/fastmcp)
+- [Anthropic MCP Announcement](https://www.anthropic.com/news/model-context-protocol)
+
+---
+
+## Video 12: NetBox + MCP Hands-On Setup
+
+[▶️ Watch on YouTube](https://www.youtube.com/watch?v=YOUR_VIDEO_ID)
+
+### 📋 Overview
+
+Hands-on guide to connecting Claude Code to NetBox using MCP. Query your network infrastructure using natural language.
+
+### 🎯 What You'll Learn
+
+- Install Node.js, Claude Code CLI, and UV
+- Clone and configure NetBox MCP Server
+- Create NetBox API token
+- Register MCP server with Claude Code
 - Query NetBox using natural language
 
 ### 🏗️ Architecture
@@ -2657,7 +2836,7 @@ ls -la
 </details>
 
 <details>
-<summary>5. Get NetBox API Token</summary>
+<summary>5. Create NetBox API Token</summary>
 
 ```bash
 # In NetBox UI:
@@ -2667,6 +2846,10 @@ ls -la
 # 4. Description: "claude-mcp"
 # 5. Click Create
 # 6. Copy the token immediately!
+
+# Verify token works
+curl -H "Authorization: Token YOUR_TOKEN" \
+  http://192.168.1.120:8000/api/dcim/devices/ | head
 ```
 
 </details>
@@ -2706,25 +2889,53 @@ claude mcp list
 </details>
 
 <details>
-<summary>8. Start Claude Code and Query NetBox</summary>
+<summary>8. Start Claude Code and Login</summary>
 
 ```bash
 # Launch Claude Code CLI
 claude
 
-# Now you can ask natural language questions:
-# "What devices are in my network?"
-# "Show me all IP addresses in the 192.168.1.0/24 subnet"
-# "What's connected to vIOS-R1?"
-# "List all sites in NetBox"
-# "Show me devices with role Router"
-# "What interfaces does vIOS-R2 have?"
+# First time: You'll need to authenticate
+# Follow the prompts to login with your Anthropic account
+
+# After login, you'll see the Claude Code prompt
+# Type /help to see available commands
 ```
 
 </details>
 
 <details>
-<summary>9. MCP Server Management</summary>
+<summary>9. Demo Queries - Query NetBox with Natural Language</summary>
+
+```bash
+# Once in Claude Code, try these queries:
+
+# Basic device query
+"List all devices in my NetBox"
+
+# Specific device info
+"What is the IP address of vIOS-R1?"
+
+# Site-based query
+"Show me all devices in the Main-DC site with their IP addresses"
+
+# IPAM query
+"List all IP addresses in my NetBox"
+
+# Infrastructure summary
+"Give me a summary of my network infrastructure in NetBox"
+
+# Role-based query
+"Show me all devices with role Router"
+
+# Interface query
+"What interfaces does vIOS-R2 have?"
+```
+
+</details>
+
+<details>
+<summary>10. MCP Server Management</summary>
 
 ```bash
 # List all MCP servers
@@ -2738,16 +2949,235 @@ claude mcp add netbox \
   -e NETBOX_URL=http://new-ip:8000/ \
   -e NETBOX_TOKEN=new-token \
   -- uv --directory ~/mcp-servers/netbox-mcp-server run netbox-mcp-server
+
+# View MCP server logs (for troubleshooting)
+# Check ~/.claude/mcp-logs/
 ```
 
 </details>
 
+### ⚠️ Important Notes
+
+- **Read-Only:** The NetBox MCP server only queries data - it cannot modify NetBox
+- **No SSH:** This MCP server cannot SSH into actual devices (that's Video 13!)
+- **Token Security:** Keep your API token secure, don't commit to git
+
 ### 🔗 Resources
 
-- [NetBox MCP Server](https://github.com/netboxlabs/netbox-mcp-server)
-- [Claude Code](https://claude.ai/download)
+- [NetBox MCP Server GitHub](https://github.com/netboxlabs/netbox-mcp-server)
+- [Claude Code Download](https://claude.ai/download)
 - [FastMCP Documentation](https://gofastmcp.com)
-- [MCP Protocol](https://modelcontextprotocol.io/)
+
+---
+
+## Video 13: Custom MCP Server - Network Device Automation
+
+🔜 **Coming Soon**
+
+### 📋 Overview
+
+Build a custom MCP server using FastMCP and Netmiko to SSH into network devices and run commands via Claude.
+
+### 🎯 What You'll Build
+
+- Custom Python MCP server with FastMCP
+- SSH connectivity using Netmiko
+- Device inventory from YAML file
+- Natural language → Live device commands
+
+### 🏗️ Architecture
+
+```
+┌─────────────────┐     ┌─────────────────┐     ┌─────────────────┐
+│  Claude Code    │────▶│  Custom MCP     │────▶│ Network Devices │
+│  "show version  │     │  (Netmiko)      │     │  (SSH)          │
+│   on R1"        │◀────│                 │◀────│  R1, R2, R3     │
+└─────────────────┘     └─────────────────┘     └─────────────────┘
+```
+
+### 📦 Key Components
+
+<details>
+<summary>devices.yaml - Device Inventory</summary>
+
+```yaml
+devices:
+  vIOS-R1:
+    host: 192.168.1.101
+    username: ansible
+    password: ansible@123
+    device_type: cisco_ios
+    port: 22
+    
+  vIOS-R2:
+    host: 192.168.1.102
+    username: ansible
+    password: ansible@123
+    device_type: cisco_ios
+    port: 22
+    
+  vIOS-R3:
+    host: 192.168.1.103
+    username: ansible
+    password: ansible@123
+    device_type: cisco_ios
+    port: 22
+```
+
+</details>
+
+<details>
+<summary>mcp_server.py - Custom MCP Server</summary>
+
+```python
+from fastmcp import FastMCP
+from netmiko import ConnectHandler
+import yaml
+
+# Initialize MCP server
+mcp = FastMCP("Network Device MCP")
+
+# Load device inventory
+def load_inventory(path: str = "devices.yaml"):
+    with open(path, "r") as f:
+        data = yaml.safe_load(f)
+    return data.get("devices", {})
+
+DEVICES = load_inventory()
+
+@mcp.tool()
+def list_devices() -> list:
+    """List all available network devices"""
+    return list(DEVICES.keys())
+
+@mcp.tool()
+def run_command(device_name: str, command: str) -> str:
+    """Run a command on a network device via SSH"""
+    if device_name not in DEVICES:
+        return f"Error: Device {device_name} not found"
+    
+    device_params = DEVICES[device_name].copy()
+    
+    try:
+        with ConnectHandler(**device_params) as conn:
+            output = conn.send_command(command)
+            return output
+    except Exception as e:
+        return f"Error: {str(e)}"
+
+@mcp.tool()
+def get_device_info(device_name: str) -> dict:
+    """Get connection info for a device (without password)"""
+    if device_name not in DEVICES:
+        return {"error": f"Device {device_name} not found"}
+    
+    info = DEVICES[device_name].copy()
+    info.pop("password", None)  # Remove password from response
+    return info
+
+if __name__ == "__main__":
+    mcp.run()
+```
+
+</details>
+
+<details>
+<summary>Example Queries</summary>
+
+```bash
+# List available devices
+"What devices can you connect to?"
+
+# Run show commands
+"Show the version on vIOS-R1"
+"What interfaces are on vIOS-R2?"
+"Show me the routing table on vIOS-R3"
+
+# Multi-device queries
+"Show version on all routers"
+"Check BGP status on R1 and R2"
+```
+
+</details>
+
+---
+
+## Video 14: Ansible MCP Integration
+
+🔜 **Coming Soon**
+
+### 📋 Overview
+
+Integrate MCP with Ansible to trigger playbooks via natural language using Claude.
+
+### 🎯 What You'll Build
+
+- MCP server that runs Ansible playbooks
+- Natural language → Ansible automation
+- Integration with NetBox for inventory
+
+### 🏗️ Architecture
+
+```
+┌─────────────────┐     ┌─────────────────┐     ┌─────────────────┐
+│  Claude Code    │────▶│  Ansible MCP    │────▶│     Ansible     │
+│  "Backup all    │     │  Server         │     │   Playbooks     │
+│   routers"      │◀────│                 │◀────│                 │
+└─────────────────┘     └─────────────────┘     └─────────────────┘
+                                                        │
+                                                        ▼
+                                               ┌─────────────────┐
+                                               │ Network Devices │
+                                               └─────────────────┘
+```
+
+### 📦 Example Queries
+
+```bash
+# Run playbooks via natural language
+"Run the backup playbook on all routers"
+"Deploy the SNMP configuration to FortiGate"
+"Execute the interface verification playbook"
+
+# Combine with NetBox
+"Run the backup playbook on all devices in Main-DC site"
+```
+
+---
+
+## Video 15: pyATS MCP Server
+
+🔜 **Coming Soon**
+
+### 📋 Overview
+
+Build a pyATS MCP server to run network tests and validation via Claude - connecting back to Video 10!
+
+### 🎯 What You'll Build
+
+- MCP server wrapping pyATS/Genie
+- Natural language network testing
+- Learn/Parse/Diff operations via Claude
+
+### 🏗️ Architecture
+
+```
+┌─────────────────┐     ┌─────────────────┐     ┌─────────────────┐
+│  Claude Code    │────▶│   pyATS MCP     │────▶│ Network Devices │
+│  "Learn OSPF    │     │   Server        │     │                 │
+│   state on R1"  │◀────│                 │◀────│                 │
+└─────────────────┘     └─────────────────┘     └─────────────────┘
+```
+
+### 📦 Example Queries
+
+```bash
+# pyATS operations via natural language
+"Learn the interface state on vIOS-R1"
+"Parse show ip route on all routers"
+"Compare the OSPF state before and after the change"
+"Run a health check on all devices"
+```
 
 ---
 
@@ -2762,6 +3192,9 @@ claude mcp add netbox \
 | Fortinet Docs | [docs.fortinet.com](https://docs.fortinet.com/) |
 | pyATS Docs | [developer.cisco.com/pyats](https://developer.cisco.com/docs/pyats/) |
 | MCP Protocol | [modelcontextprotocol.io](https://modelcontextprotocol.io/) |
+| FastMCP | [gofastmcp.com](https://gofastmcp.com/) |
+| Claude Code | [claude.ai/download](https://claude.ai/download) |
+| NetBox MCP Server | [github.com/netboxlabs/netbox-mcp-server](https://github.com/netboxlabs/netbox-mcp-server) |
 
 ---
 
@@ -2779,6 +3212,17 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 ---
 
 ## 📝 Changelog
+
+### v13.0 (2025-01-26)
+- ✅ Restructured MCP content into multi-video series
+- ✅ Video 11: MCP Fundamentals (theory, architecture, concepts)
+- ✅ Video 12: NetBox + MCP Hands-On Setup
+- ✅ Video 13: Custom MCP Server - Network Device Automation (preview)
+- ✅ Video 14: Ansible MCP Integration (preview)
+- ✅ Video 15: pyATS MCP Server (preview)
+- ✅ Added comprehensive MCP architecture diagrams
+- ✅ Added FastMCP code examples
+- ✅ Updated video index to 15 videos
 
 ### v12.0 (2025-01-21)
 - ✅ Added comprehensive OAuth client secret error troubleshooting to Video 9

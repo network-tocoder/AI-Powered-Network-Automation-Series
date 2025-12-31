@@ -45,6 +45,7 @@ This series takes you from zero to hero in network automation. Build a complete 
 | 9 | [NetBox Auto-Discovery](#video-9-netbox-auto-discovery---complete-setup-guide) | DIODE, ORB Agent, OAuth | [▶️ YouTube](https://www.youtube.com/watch?v=DODzEsMTmKQ) |
 | 10 | [pyATS + NetBox](#video-10-pyats--netbox-integration) | pyATS, Testing, NetBox | [▶️ YouTube](https://www.youtube.com/watch?v=V_PmWxC2QDA) |
 | 11 | [MCP Fundamentals](#video-11-mcp-fundamentals---quick-breakdown) | MCP, Architecture, FastMCP | [▶️ YouTube](https://www.youtube.com/watch?v=DDQL5OQDLJU) |
+| 12 | [NetBox + MCP Hands-On](#video-12-netbox--mcp-hands-on-setup) | Claude Code, Setup, Queries | [▶️ YouTube](https://www.youtube.com/watch?v=YOUR_VIDEO_ID) |
 
 ---
 
@@ -2556,26 +2557,143 @@ ls -la archive/
 
 ### 📋 Overview
 
-Understanding Model Context Protocol (MCP) - the universal standard that connects AI assistants to external tools.
+Understanding Model Context Protocol (MCP) - the universal standard that connects AI assistants to external tools. This video covers theory and concepts only - hands-on setup is in Video 12.
 
 ### 🎯 What You'll Learn
 
-- What is MCP (Model Context Protocol)
-- MCP architecture and connectivity methods
+- What is MCP and why it matters
+- MCP architecture (Host, Server, Resources)
+- Transport methods (STDIO vs HTTP)
+- FastMCP framework basics
+
+### 🏗️ MCP Architecture
+
+```
+┌─────────────────────────────────────────────────────────────────────┐
+│                        MCP ARCHITECTURE                              │
+├─────────────────────────────────────────────────────────────────────┤
+│                                                                      │
+│  ┌───────────┐       JSON-RPC       ┌─────────────────┐             │
+│  │           │                      │   MCP SERVER    │             │
+│  │  MCP HOST │◄────────────────────►│                 │             │
+│  │           │    request/response  │  ┌───────────┐  │    API      │
+│  │  Claude   │                      │  │  TOOLS    │  │   calls     │
+│  │  Code     │                      │  │ ────────  │  │◄──────────► │
+│  │           │                      │  │ • func1() │  │             │
+│  └───────────┘                      │  │ • func2() │  │             │
+│                                     │  └───────────┘  │             │
+│                                     └─────────────────┘             │
+│                                            │                         │
+│                                            ▼                         │
+│                                     ┌─────────────┐                  │
+│                                     │  RESOURCES  │                  │
+│                                     │ ─────────── │                  │
+│                                     │ • APIs      │                  │
+│                                     │ • Databases │                  │
+│                                     │ • Files     │                  │
+│                                     └─────────────┘                  │
+└─────────────────────────────────────────────────────────────────────┘
+```
+
+### 📊 MCP Components
+
+| Component | Description | Examples |
+|-----------|-------------|----------|
+| **MCP Host** | AI application interface | Claude Code, Claude Desktop, VS Code |
+| **MCP Server** | Bridge between AI and tools | NetBox MCP, Custom servers |
+| **Resources** | Actual data sources | APIs, Databases, Files |
+| **Tools** | Functions AI can execute | get_devices(), get_ips() |
+
+### 🔄 Transport Methods
+
+| Transport | Use Case | Pros | Cons |
+|-----------|----------|------|------|
+| **STDIO** | Local development | Simple, Secure, No ports | Same machine only |
+| **HTTP/SSE** | Remote/Team | Multi-user, Docker-friendly | Network config needed |
+
+### 📖 Transport Decision Guide
+
+```
+┌─────────────────────────┬────────────┐
+│      SCENARIO           │   USE      │
+├─────────────────────────┼────────────┤
+│ Local development       │   STDIO    │
+│ Same machine            │   STDIO    │
+│ Remote server           │   HTTP     │
+│ Docker deployment       │   HTTP     │
+│ Team shared             │   HTTP     │
+│ Just starting? ⭐       │   STDIO    │
+└─────────────────────────┴────────────┘
+
+💡 Start with STDIO → Graduate to HTTP
+```
+
+### 🔗 Resources
+
+- [MCP Protocol Documentation](https://modelcontextprotocol.io/)
+- [FastMCP Framework](https://gofastmcp.com)
+- [Anthropic MCP Guide](https://docs.anthropic.com/en/docs/claude-code/mcp)
+
+---
+
+## Video 12: NetBox + MCP Hands-On Setup
+
+[▶️ Watch on YouTube](https://www.youtube.com/watch?v=YOUR_VIDEO_ID)
+
+### 📋 Overview
+
+Complete hands-on guide to connect Claude AI to NetBox using Model Context Protocol (MCP) for natural language infrastructure queries.
+
+### 🎯 What You'll Learn
+
 - Install Claude Code CLI on Linux
-- Setup NetBox MCP Server
+- Setup UV Python package manager
+- Clone and configure NetBox MCP Server
+- Create NetBox API token
 - Query NetBox using natural language
 
-### 🏗️ Architecture
+### 🏗️ Lab Architecture
 
 ```
-┌─────────────────┐     ┌─────────────────┐     ┌─────────────────┐
-│  Claude Code    │────▶│   MCP Server    │────▶│     NetBox      │
-│  (AI Assistant) │◀────│   (Bridge)      │◀────│     (API)       │
-└─────────────────┘     └─────────────────┘     └─────────────────┘
-     Natural               Translates            Returns
-     Language              to API calls          Data
+┌────────────────────────────────────────────────────────────────────┐
+│                        LAB TOPOLOGY                                 │
+├────────────────────────────────────────────────────────────────────┤
+│                                                                     │
+│   ┌─────────────────┐            ┌─────────────────┐               │
+│   │  Ansible Node   │            │     NetBox      │               │
+│   │  (Claude Host)  │────────────│  192.168.1.20   │               │
+│   │                 │    API     │                 │               │
+│   │ • Claude Code   │            │  ┌───────────┐  │               │
+│   │ • NetBox MCP    │            │  │ 3 Devices │  │               │
+│   │ • UV / Python   │            │  └───────────┘  │               │
+│   └─────────────────┘            └─────────────────┘               │
+│                                                                     │
+│   Devices in NetBox:                                                │
+│   ┌─────────┐   ┌─────────┐   ┌─────────┐                          │
+│   │ vIOS-R1 │   │ vIOS-R2 │   │ vIOS-R3 │                          │
+│   │  .201   │   │  .202   │   │  .203   │                          │
+│   └─────────┘   └─────────┘   └─────────┘                          │
+│                                                                     │
+│   ⚠️ Note: Actual routers NOT required for MCP queries!            │
+│                                                                     │
+└────────────────────────────────────────────────────────────────────┘
 ```
+
+### 📖 Key Concepts
+
+| Term | Description |
+|------|-------------|
+| **Node.js** | JavaScript runtime for running CLI tools like Claude Code |
+| **NPM** | Node Package Manager - like pip for JavaScript packages |
+| **Claude Code** | CLI interface for Claude AI (Linux option) |
+| **Claude Desktop** | GUI application (Windows/macOS only - no Linux) |
+| **UV** | Fast Python package manager built in Rust (10-100x faster than pip) |
+| **MCP Host** | Where the AI runs (Claude Code in our case) |
+| **MCP Server** | Bridge that translates AI requests to API calls |
+| **Tools** | Functions the AI can call (e.g., netbox_get_objects) |
+| **Pontification** | Claude's "thinking out loud" reasoning process |
+| **DCIM** | Data Center Infrastructure Management (devices, racks, sites) |
+| **IPAM** | IP Address Management (IPs, prefixes, VLANs) |
 
 ### 💻 Commands
 
@@ -2583,11 +2701,10 @@ Understanding Model Context Protocol (MCP) - the universal standard that connect
 <summary>1. Install Node.js 20+</summary>
 
 ```bash
-# Remove old Node.js (if any conflicts)
-sudo apt remove -y libnode-dev nodejs npm
-sudo apt autoremove -y
+# Check if Node.js is installed
+node --version
 
-# Add NodeSource repository for Node.js 20
+# If not installed, add NodeSource repository
 curl -fsSL https://deb.nodesource.com/setup_20.x | sudo -E bash -
 
 # Install Node.js
@@ -2597,6 +2714,10 @@ sudo apt install -y nodejs
 node --version    # Should show v20.x.x
 npm --version     # Should show 10.x.x
 ```
+
+**What is Node.js?** JavaScript runtime that lets you run JavaScript outside a browser. Many modern CLI tools are built with it.
+
+**What is NPM?** Node Package Manager - like pip for Python or apt for Ubuntu.
 
 </details>
 
@@ -2610,9 +2731,16 @@ sudo npm install -g @anthropic-ai/claude-code
 # Verify installation
 claude --version
 
-# Check help
+# Check available commands
 claude --help
 ```
+
+**Claude Offerings:**
+| Option | Platform | Description |
+|--------|----------|-------------|
+| Claude.ai | Web | Browser-based interface |
+| Claude Desktop | Windows/macOS | GUI application (No Linux!) |
+| Claude Code | All platforms | CLI interface ← Our choice for Linux |
 
 </details>
 
@@ -2620,19 +2748,21 @@ claude --help
 <summary>3. Install UV (Python Package Manager)</summary>
 
 ```bash
-# Install uv
+# Install UV
 curl -LsSf https://astral.sh/uv/install.sh | sh
 
-# Add to PATH
+# Add to PATH (current session)
 source $HOME/.local/bin/env
 
-# Or add to ~/.bashrc permanently
+# Add to PATH permanently
 echo 'source $HOME/.local/bin/env' >> ~/.bashrc
 source ~/.bashrc
 
 # Verify installation
 uv --version
 ```
+
+**Why UV?** 10-100x faster than pip, automatically creates virtual environments, handles all dependency resolution.
 
 </details>
 
@@ -2641,93 +2771,167 @@ uv --version
 
 ```bash
 # Create MCP servers directory
-mkdir -p ~/mcp-servers && cd ~/mcp-servers
+mkdir -p ~/mcp-servers
+cd ~/mcp-servers
 
-# Clone official NetBox MCP server
+# Clone official NetBox MCP server from NetBox Labs
+# Find at: NetBox Labs Docs > MCP Section > GitHub Repository
 git clone https://github.com/netboxlabs/netbox-mcp-server.git
+
+# Verify clone
+ls -l
+
+# Enter the directory
 cd netbox-mcp-server
 
-# Install dependencies with uv
-uv sync
-
-# Verify files
+# View contents
 ls -la
 ```
 
 </details>
 
 <details>
-<summary>5. Get NetBox API Token</summary>
+<summary>5. Create NetBox API Token</summary>
 
 ```bash
 # In NetBox UI:
-# 1. Login to NetBox: http://192.168.1.120:8000
-# 2. Go to: Profile (top right) > API Tokens
-# 3. Click "Add a token"
-# 4. Description: "claude-mcp"
-# 5. Click Create
-# 6. Copy the token immediately!
+# 1. Login to NetBox: http://192.168.1.20:8000
+# 2. Click your username (top right corner)
+# 3. Select "API Tokens"
+# 4. Click "+ Add a token"
+# 5. Description: "mcp-setup"
+# 6. Write enabled: Leave UNCHECKED (read-only is safer)
+# 7. Click "Create"
+# 8. COPY THE TOKEN IMMEDIATELY - shown only once!
 ```
 
 </details>
 
 <details>
-<summary>6. Test MCP Server Connection</summary>
+<summary>6. Test MCP Server Standalone</summary>
 
 ```bash
-# Test MCP server (replace with your NetBox URL and token)
-NETBOX_URL=http://192.168.1.120:8000/ \
+# Navigate to MCP server directory
+cd ~/mcp-servers/netbox-mcp-server
+
+# Test MCP server connection (replace with your values)
+NETBOX_URL=http://192.168.1.20:8000/ \
 NETBOX_TOKEN=your-netbox-api-token \
 uv run netbox-mcp-server
 
-# If it starts without errors, press Ctrl+C to stop
-# You should see no errors - just waiting for connections
+# What happens behind the scenes:
+# 1. UV creates virtual environment (.venv folder)
+# 2. Reads dependencies from pyproject.toml
+# 3. Downloads packages (FastMCP, httpx, pydantic, etc.)
+# 4. Runs the MCP server
+
+# You should see:
+# - FastMCP banner
+# - Server name: NetBox
+# - Message: "Starting MCP server 'NetBox' with transport 'stdio'"
+
+# Press Ctrl+C to stop the server
 ```
+
+**What does this prove?** MCP server can connect to NetBox API and is functioning correctly - but running standalone, not connected to Claude yet.
 
 </details>
 
 <details>
-<summary>7. Configure Claude Code with MCP</summary>
+<summary>7. Configure Claude Code with MCP Server</summary>
 
 ```bash
-# Add NetBox MCP server to Claude Code
+# Register MCP server with Claude Code
 claude mcp add netbox \
-  -e NETBOX_URL=http://192.168.1.120:8000/ \
+  -e NETBOX_URL=http://192.168.1.20:8000/ \
   -e NETBOX_TOKEN=your-netbox-api-token \
   -- uv --directory ~/mcp-servers/netbox-mcp-server run netbox-mcp-server
 
-# Verify MCP server is added
+# Command breakdown:
+# claude mcp add netbox     → Add server named "netbox"
+# -e NETBOX_URL=...         → Environment variable for URL
+# -e NETBOX_TOKEN=...       → Environment variable for token
+# -- uv --directory ... run → Command to start the server
+
+# Verify MCP server is registered
 claude mcp list
 
-# Should show:
-# netbox: uv --directory /home/user/mcp-servers/netbox-mcp-server run netbox-mcp-server
+# You should see:
+# "Checking MCP server health..."
+# "netbox ✓ Connected"
 ```
+
+**Difference between Step 6 and Step 7:**
+| Step 6 | Step 7 |
+|--------|--------|
+| Manual standalone test | Register with Claude Code |
+| We run the server | Claude manages the server |
+| Verify it works | Enable Claude to use it |
 
 </details>
 
 <details>
-<summary>8. Start Claude Code and Query NetBox</summary>
+<summary>8. Start Claude Code</summary>
 
 ```bash
-# Launch Claude Code CLI
+# Launch Claude Code
 claude
 
-# Now you can ask natural language questions:
-# "What devices are in my network?"
-# "Show me all IP addresses in the 192.168.1.0/24 subnet"
-# "What's connected to vIOS-R1?"
-# "List all sites in NetBox"
-# "Show me devices with role Router"
-# "What interfaces does vIOS-R2 have?"
+# First-time setup:
+# 1. Choose text editor style (6 options) - pick default
+# 2. Select login method:
+#    - Claude Subscription (Pro/Max) ← Recommended
+#    - API Usage (pay per token)
+# 3. Browser opens for authentication
+# 4. Login and authorize
+# 5. Press Enter to continue
+# 6. Configure terminal settings (use default)
+
+# Welcome screen shows:
+# - Subscription details
+# - Model: Claude Opus 4.5
+# - Available MCP servers including "netbox"
+```
+
+**Login Options:**
+| Option | Description | Pricing |
+|--------|-------------|---------|
+| Claude Subscription | Pro/Max monthly | Fixed monthly fee |
+| API Usage | Pay per token | See anthropic.com/pricing |
+
+</details>
+
+<details>
+<summary>9. Demo Queries</summary>
+
+```bash
+# Inside Claude Code, try these natural language queries:
+
+# Query 1: List all devices
+List all devices in my NetBox
+# Triggers: netbox_get_objects tool
+# Returns: Device ID, Name, Status, Type, Site, Primary IP
+
+# Query 2: Site and role query
+Show all devices from Main-DC with their role
+# May show "Pontification" (Claude thinking out loud)
+
+# Query 3: IP address query (IPAM)
+List all IP addresses assigned to each device
+# Queries ipam.ipaddresses object
+
+# Query 4: MAC address query
+List all MAC addresses available in NetBox
+# Returns: MAC addresses for each interface
 ```
 
 </details>
 
 <details>
-<summary>9. MCP Server Management</summary>
+<summary>10. MCP Server Management</summary>
 
 ```bash
-# List all MCP servers
+# List all registered MCP servers
 claude mcp list
 
 # Remove an MCP server
@@ -2738,14 +2942,77 @@ claude mcp add netbox \
   -e NETBOX_URL=http://new-ip:8000/ \
   -e NETBOX_TOKEN=new-token \
   -- uv --directory ~/mcp-servers/netbox-mcp-server run netbox-mcp-server
+
+# View MCP server configuration
+cat ~/.config/claude-code/mcp.json
 ```
 
 </details>
 
+<details>
+<summary>11. Troubleshooting</summary>
+
+```bash
+# If UV times out during package install
+UV_HTTP_TIMEOUT=120 uv sync
+
+# If MCP server won't start - reset virtual environment
+cd ~/mcp-servers/netbox-mcp-server
+rm -rf .venv
+uv sync
+
+# If Claude can't connect to MCP server
+claude mcp list
+# Check for red X marks or "Disconnected" status
+
+# Verify NetBox API is accessible
+curl -s http://192.168.1.20:8000/api/ \
+  -H "Authorization: Token YOUR_TOKEN" | head -20
+
+# Debug MCP server with logging
+NETBOX_URL=http://192.168.1.20:8000/ \
+NETBOX_TOKEN=your-token \
+uv run netbox-mcp-server 2>&1 | tee mcp-debug.log
+```
+
+</details>
+
+### 🎯 Demo Queries Reference
+
+| Query | Tool Called | Data Returned |
+|-------|-------------|---------------|
+| "List all devices" | netbox_get_objects | Device ID, Name, Status, Type, Site, IP |
+| "Show devices from Main-DC with role" | netbox_get_objects | Devices filtered by site with roles |
+| "List all IP addresses" | netbox_get_objects (ipam) | IPs, interfaces, assignment status |
+| "List all MAC addresses" | netbox_get_objects | MAC addresses per interface |
+
+### ⚠️ Important Notes
+
+```
+┌─────────────────────────────────────────────────────────────────┐
+│                     IMPORTANT NOTES                              │
+├─────────────────────────────────────────────────────────────────┤
+│                                                                  │
+│  ✅ READ-ONLY ACCESS                                             │
+│     NetBox MCP server only queries data                          │
+│     It CANNOT modify your NetBox                                 │
+│     Safe for production environments                             │
+│                                                                  │
+│  ❌ NO SSH TO DEVICES                                            │
+│     We're querying NetBox (source of truth)                      │
+│     NOT the actual network devices                               │
+│     For device access → Video 13: Custom MCP Server              │
+│                                                                  │
+└─────────────────────────────────────────────────────────────────┘
+```
+
 ### 🔗 Resources
 
-- [NetBox MCP Server](https://github.com/netboxlabs/netbox-mcp-server)
-- [Claude Code](https://claude.ai/download)
+- [NetBox MCP Server GitHub](https://github.com/netboxlabs/netbox-mcp-server)
+- [NetBox Labs Documentation](https://netboxlabs.com/docs/)
+- [Claude Code Download](https://claude.ai/download)
+- [Anthropic Pricing](https://anthropic.com/pricing)
+- [UV Package Manager](https://astral.sh/uv)
 - [FastMCP Documentation](https://gofastmcp.com)
 - [MCP Protocol](https://modelcontextprotocol.io/)
 
@@ -2781,10 +3048,18 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 ## 📝 Changelog
 
 ### v13.0 (2025-01-31)
-- ✅ Updated Video 11: MCP Fundamentals - Quick Breakdown (Theory)
-- ✅ Added YouTube link: https://www.youtube.com/watch?v=DDQL5OQDLJU
-- ✅ Renamed from "NetBox + MCP Integration" to "MCP Fundamentals"
-- ✅ Preparing Video 12: NetBox + MCP Hands-On Setup
+- ✅ Updated Video 11: MCP Fundamentals - Quick Breakdown (Theory Only)
+- ✅ Added YouTube link for Video 11: https://www.youtube.com/watch?v=DDQL5OQDLJU
+- ✅ Added Video 12: NetBox + MCP Hands-On Setup (Complete Hands-On Guide)
+- ✅ Split theory (Video 11) and hands-on (Video 12) into separate videos
+- ✅ Added comprehensive explanations for Node.js, NPM, UV, Claude offerings
+- ✅ Added Step 6 vs Step 7 difference explanation
+- ✅ Added login options (Subscription vs API) explanation
+- ✅ Added Demo Queries reference table
+- ✅ Added Troubleshooting section with common fixes
+- ✅ Updated NetBox URL to 192.168.1.20
+- ✅ Added Key Concepts table (Pontification, DCIM, IPAM)
+- ✅ Added Important Notes box (Read-only, No SSH)
 
 ### v12.0 (2025-01-21)
 - ✅ Added comprehensive OAuth client secret error troubleshooting to Video 9

@@ -2985,15 +2985,9 @@ Build a custom MCP server using FastMCP and Netmiko to SSH into network devices 
 - Device inventory from YAML file
 - Natural language → Live device commands
 
-### 🏗️ Architecture
+### 🏗️ Architecture Overview
+![Custom MCP Architecture](assets/custom_mcp_flow_diagram.png)
 
-```
-┌─────────────────┐     STDIO     ┌────────────────────┐     SSH      ┌─────────────┐
-│  Claude Code    │◄─────────────►│  Custom MCP Server │◄────────────►│   Routers   │
-│                 │               │  (FastMCP + Netmiko)│              │  R1, R2, R3 │
-└─────────────────┘               └────────────────────┘              └─────────────┘
-     "Show version on R1"              Translates to SSH               Returns output
-```
 
 ### Tech Stack:
 - **FastMCP** - Framework for building MCP servers

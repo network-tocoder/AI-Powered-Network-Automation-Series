@@ -30,7 +30,7 @@ This series takes you from zero to hero in network automation. Build a complete 
 
 ---
 
-## 📺 Video Index (REPLACE EXISTING)
+## 📺 Video Index 
 
 | # | Video | Topic | 🎬 Watch |
 |---|-------|-------|----------|

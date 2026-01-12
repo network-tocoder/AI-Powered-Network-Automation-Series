@@ -3271,7 +3271,6 @@ Configure Ansible to pull device inventory directly from NetBox instead of stati
 - How dynamic inventory actually works
 - Setting up the NetBox Ansible plugin
 - Auto-grouping devices by role, site, and platform
-- Auto-group devices by role, site, platform
 - And running playbooks against this live inventory"
 - Troubleshoot common issues (including Redis Docker bug)
 

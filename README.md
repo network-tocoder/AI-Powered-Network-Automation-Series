@@ -3606,6 +3606,7 @@ ansible-inventory --list
 
 # Check variables for specific host
 ansible-inventory --host vIOS-R1
+ansible-inventory -i inventory/netbox.yml --host vIOS-R1 --vars --yaml
 
 # Test connectivity to all devices
 ansible all -m ping

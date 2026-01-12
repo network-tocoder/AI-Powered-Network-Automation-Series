@@ -3557,7 +3557,7 @@ host_key_checking = False
 timeout = 30
 ```
 
-</details>
+<!-- </details>
 
 <details>
 <summary>6. Create Group Variables</summary>
@@ -3582,7 +3582,7 @@ ansible_become: yes
 ansible_become_method: enable
 ```
 
-</details>
+</details> -->
 
 <details>
 <summary>7. Test Dynamic Inventory</summary>

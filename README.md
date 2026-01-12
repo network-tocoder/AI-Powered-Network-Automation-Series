@@ -3578,7 +3578,7 @@ code ./group_vars/all.yml
 ansible_user: ansible
 ansible_password: ansible@123
 ansible_connection: network_cli
-ansible_network_os: cisco.ios.ios
+# ansible_network_os: cisco.ios.ios ( add it if nessary .. it can pulled from netbox with Jinaj2 template used in netbox.yml file)
 ansible_become: yes
 ansible_become_method: enable
 ```

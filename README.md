@@ -3448,6 +3448,13 @@ ls -l ./inventory/
 <summary>3. Install NetBox Ansible Collection</summary>
 
 ```bash
+# Check if Netbox Plugin avaliable on Virtiual Enviorment
+ansible-galaxy collection list | grep netbox
+
+# If exist, remove them if its older version ( current Plugin Version is 3.22)
+rm -rf ~/.ansible/collections/ansible_collections/netbox/netbox
+rm -rf ~/ansible-project/ansible-venv/lib/python3.10/site-packages/ansible_collections/netbox/netbox
+
 # Install NetBox collection
 ansible-galaxy collection install netbox.netbox
 

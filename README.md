@@ -3268,11 +3268,11 @@ Configure Ansible to pull device inventory directly from NetBox instead of stati
 
 ### 🎯 What You'll Learn
 
-- Static vs Dynamic Inventory comparison
-- Install and configure NetBox Ansible collection
-- Create netbox.yml inventory plugin configuration
+- How dynamic inventory actually works
+- Setting up the NetBox Ansible plugin
+- Auto-grouping devices by role, site, and platform
 - Auto-group devices by role, site, platform
-- Run playbooks against dynamic inventory
+- And running playbooks against this live inventory"
 - Troubleshoot common issues (including Redis Docker bug)
 
 ### 🏗️ Architecture
@@ -3425,17 +3425,16 @@ curl -s -H "Authorization: Token YOUR_NETBOX_TOKEN" \
 # Activate your ansible virtual environment
 netdev
 
-# Navigate to ansible project
+# Check our project
+ls -l
 cd ~/ansible-project
 
-# Check current project structure
-ls -l
-
-# View current static inventory
+# Look at current static inventory
 cat ./inventory/hosts
 
-# Backup static inventory before changes
-mv ./inventory/hosts ./inventory/hosts.backup
+# Backup old inventory
+mv ./inventory/hosts ./inventory/hosts_backup
+ls -l ./inventory/
 
 # Verify backup created
 ls -l ./inventory/
@@ -3451,8 +3450,7 @@ ls -l ./inventory/
 # Check if Netbox Plugin avaliable on Virtiual Enviorment
 ansible-galaxy collection list | grep netbox
 
-# Verify plugin exists
-ansible-doc -t inventory netbox.netbox.nb_inventory
+"Nothing installed. Let's get the latest version."
 
 # If exist, remove them if its older version ( current Plugin Version is 3.22)
 rm -rf ~/.ansible/collections/ansible_collections/netbox/netbox
@@ -3468,12 +3466,21 @@ ansible-galaxy collection install netbox.netbox --force
 ansible-galaxy collection list | grep netbox
 # Expected: netbox.netbox  3.20.0 (or newer)
 
+# Verify plugin exists
+ansible-doc -t inventory netbox.netbox.nb_inventory
+
 # Install required Python dependency
 pip install pytz
+pip install ansible-pylibssh
 
 # Verify pytz installed
 pip show pytz
 # Expected: Version: 2025.x
+pip show ansible-pylibssh
+
+
+
+
 ```
 
 </details>

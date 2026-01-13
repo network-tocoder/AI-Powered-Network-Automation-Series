@@ -3100,6 +3100,40 @@ Configure Ansible to pull device inventory directly from NetBox instead of stati
 
 **Key Concept:** The `netbox.yml` file is NOT the inventory itself - it's the CONFIG that tells Ansible HOW to get inventory from NetBox. Every time you run an Ansible command, it queries NetBox in real-time!
 
+### Dynamic Inventory Structure
+
+This section contains the JSON schema used by our dynamic inventory scripts. Click the arrows below to expand each section.
+
+#### 1. Host Metadata (`_meta`)
+Contains individual device details like **Serial Numbers**, **Manufacturer**, and **Hardware Roles**.
+
+<details>
+<summary>▶ Click to expand Host Variables</summary>
+
+```json
+{
+  "_meta": {
+    "hostvars": {
+      "spine-01.dc1": {
+        "ansible_host": "10.10.1.1",
+        "serial_number": "SN-CISCO-123",
+        "manufacturer": "Cisco",
+        "model": "Nexus 9300",
+        "site": "Chicago-DC",
+        "device_role": "spine"
+      },
+      "leaf-01.dc1": {
+        "ansible_host": "10.10.2.1",
+        "serial_number": "SN-ARISTA-999",
+        "manufacturer": "Arista",
+        "model": "DCS-7050",
+        "site": "Chicago-DC",
+        "device_role": "leaf"
+      }
+    }
+  }
+}
+
 ### 🏠 Home LAB Demo Setup
 
 ```

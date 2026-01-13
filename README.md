@@ -3104,7 +3104,7 @@ Configure Ansible to pull device inventory directly from NetBox instead of stati
 
 This section contains the JSON schema used by our dynamic inventory scripts. Click the arrows below to expand each section.
 
-#### 1. Host Metadata (`_meta`)
+#### 1. 🔍 Host Metadata (_meta)
 Contains individual device details like **Serial Numbers**, **Manufacturer**, and **Hardware Roles**.
 
 <details>

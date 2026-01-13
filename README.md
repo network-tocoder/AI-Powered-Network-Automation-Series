@@ -38,7 +38,7 @@ This series takes you from zero to hero in network automation. Build a complete 
 | 2 | [Build Automation Environment](#video-2-build-automation-environment-inside-eve-ng) | Linux, Ansible, VS Code | [▶️ YouTube](https://www.youtube.com/watch?v=NPq7AjCguBY) |
 | 3 | [Git Workflow](#video-3-git-workflow-for-network-engineers) | Git, GitHub, Version Control | [▶️ YouTube](https://www.youtube.com/watch?v=vykDi7PFeW0) |
 | 4 | [Deploy FortiGate](#video-4-deploy-fortigate-firewall-on-eve-ng) | FortiGate, EVE-NG | [▶️ YouTube](https://www.youtube.com/watch?v=8W9OJAP773s) |
-| 5 | [FortiGate Ansible](#video-5-fortigate-firewall-using-ansible) | Ansible, FortiGate, Vault | [▶️ YouTube](https://www.youtube.com/watch?v=3VL-JRIJT8M) |
+| 5 | [FortiGate Ansible](#video-5-fortigate-automation-using-ansible) | Ansible, Vault, Playbooks | [▶️ YouTube](https://www.youtube.com/watch?v=3VL-JRIJT8M) |
 | 6 | [FortiGate REST API](#video-6-fortigate-automation-using-rest-api) | REST API, Postman | [▶️ YouTube](https://www.youtube.com/watch?v=Eqy4q9SsmtE) |
 | 7 | [NetBox Docker](#video-7-netbox-installation-using-docker) | NetBox, Docker | [▶️ YouTube](https://www.youtube.com/watch?v=OGQGly7NIFY) |
 | 8 | [NetBox Dynamic Inventory](#video-8-netbox-dynamic-inventory---core-concepts-explained) | DIODE, ORB, Architecture | [▶️ YouTube](https://www.youtube.com/watch?v=nD9FeG8A44o) |
@@ -684,31 +684,46 @@ get router info routing-table all
 
 ---
 
-## Video 5: FortiGate Firewall Using Ansible
+
+## Video 5: FortiGate Automation Using Ansible
 
 [▶️ Watch on YouTube](https://www.youtube.com/watch?v=3VL-JRIJT8M)
 
 ### 📋 Overview
 
-Automate FortiGate firewall configuration using Ansible with secure credential management.
+Automate FortiGate firewalls using Ansible with secure credential storage via Ansible Vault.
 
 ### 🎯 What You'll Learn
 
-- Install FortiOS Ansible collection
-- Create inventory for FortiGate
-- Use Ansible Vault for credentials
-- Write FortiGate automation playbooks
+- Install Ansible Collections for FortiGate
+- Ansible Vault Setup
+- Demo Playbook 1 - System Information Check
+- Demo Playbook 2 - Deploy Firewall Policy
+
+### 📁 Project Structure
+
+```
+ansible-project/
+├── ansible.cfg
+├── inventory/
+│   └── hosts
+├── host_vars/
+│   └── Forti-FW-1.yml (encrypted)
+└── playbooks/
+    ├── fortigate_system_info.yml
+    └── fortigate_create_policy.yml
+```
 
 ### 💻 Commands
 
 <details>
-<summary>1. Install FortiOS Ansible Collection</summary>
+<summary>1. Install FortiGate Collection</summary>
 
 ```bash
-# Activate virtual environment
-source ~/ansible-venv/bin/activate
+# Check Ansible version
+ansible --version
 
-# Install FortiOS collection
+# Install FortiGate collection
 ansible-galaxy collection install fortinet.fortios
 
 # Verify installation
@@ -718,254 +733,83 @@ ansible-galaxy collection list | grep fortinet
 </details>
 
 <details>
-<summary>2. Create Project Structure</summary>
+<summary>2. Ansible Vault Commands</summary>
 
 ```bash
-# Create project directory
-mkdir -p ~/ansible-projects/fortigate-automation
-cd ~/ansible-projects/fortigate-automation
+# Create encrypted vault file
+ansible-vault create host_vars/Forti-FW-1.yml
 
-# Create directory structure
-mkdir -p {inventory,group_vars,playbooks,roles}
+# View encrypted file (shows encrypted text)
+cat host_vars/Forti-FW-1.yml
 
-# Create inventory file
-cat << 'EOF' > inventory/hosts
+# View decrypted content
+ansible-vault view host_vars/Forti-FW-1.yml
+
+# Edit encrypted file
+ansible-vault edit host_vars/Forti-FW-1.yml
+
+# Change vault password
+ansible-vault rekey host_vars/Forti-FW-1.yml
+```
+
+</details>
+
+<details>
+<summary>3. Inventory Verification</summary>
+
+```bash
+# List all inventory with vault decryption
+ansible-inventory --list -i inventory/hosts --ask-vault-pass
+
+# Check specific host variables
+ansible-inventory --host Forti-FW-1 --ask-vault-pass
+
+# View inventory in YAML format
+ansible-inventory --list -i inventory/hosts --ask-vault-pass --yaml
+```
+
+</details>
+
+<details>
+<summary>4. Run Playbooks</summary>
+
+```bash
+# Run system info playbook
+ansible-playbook playbooks/fortigate_system_info.yml --ask-vault-pass
+
+# Run with verbose output
+ansible-playbook playbooks/fortigate_system_info.yml --ask-vault-pass -vvv
+
+# Create firewall policy
+ansible-playbook playbooks/fortigate_create_policy.yml --ask-vault-pass
+
+# Dry run (check mode)
+ansible-playbook playbooks/fortigate_create_policy.yml --ask-vault-pass --check
+```
+
+</details>
+
+<details>
+<summary>5. Inventory File (inventory/hosts)</summary>
+
+```ini
 [fortigates]
-fortigate-vm ansible_host=192.168.1.99
+Forti-FW-1 ansible_host=192.168.1.111
 
 [fortigates:vars]
-ansible_connection=httpapi
 ansible_network_os=fortinet.fortios.fortios
+ansible_connection=httpapi
 ansible_httpapi_use_ssl=yes
 ansible_httpapi_validate_certs=no
 ansible_httpapi_port=443
-EOF
-
-# View inventory
-cat inventory/hosts
-```
-
-</details>
-
-<details>
-<summary>3. Secure Credentials with Ansible Vault</summary>
-
-```bash
-# Create vault password file
-echo "YourVaultPassword" > .vault_pass
-
-# Secure the password file
-chmod 600 .vault_pass
-
-# Add to .gitignore
-echo ".vault_pass" >> .gitignore
-
-# Create encrypted vault file
-ansible-vault create group_vars/fortigates/vault.yml --vault-password-file .vault_pass
-
-# Inside vault.yml, add:
----
-vault_fortigate_username: admin
-vault_fortigate_password: YourFortiGatePassword
-
-# Save and exit (ESC :wq)
-
-# Verify vault is encrypted
-cat group_vars/fortigates/vault.yml
-
-# Edit vault later
-ansible-vault edit group_vars/fortigates/vault.yml --vault-password-file .vault_pass
-
-# View vault content
-ansible-vault view group_vars/fortigates/vault.yml --vault-password-file .vault_pass
-```
-
-</details>
-
-<details>
-<summary>4. Create Variables File</summary>
-
-```bash
-# Create non-sensitive variables
-cat << 'EOF' > group_vars/fortigates/vars.yml
----
-ansible_user: "{{ vault_fortigate_username }}"
-ansible_password: "{{ vault_fortigate_password }}"
-EOF
-
-# View variables
-cat group_vars/fortigates/vars.yml
-```
-
-</details>
-
-<details>
-<summary>5. Test Connectivity</summary>
-
-```bash
-# Create test playbook
-cat << 'EOF' > playbooks/test_connection.yml
----
-- name: Test FortiGate Connection
-  hosts: fortigates
-  gather_facts: no
-  
-  tasks:
-    - name: Get system status
-      fortinet.fortios.fortios_system_status:
-        vdom: root
-      register: system_status
-      
-    - name: Display FortiGate info
-      debug:
-        msg: 
-          - "Hostname: {{ system_status.meta.results.hostname }}"
-          - "Version: {{ system_status.meta.results.version }}"
-          - "Serial: {{ system_status.meta.results.serial }}"
-EOF
-
-# Run test playbook
-ansible-playbook -i inventory/hosts playbooks/test_connection.yml --vault-password-file .vault_pass
-```
-
-</details>
-
-<details>
-<summary>6. Configure Firewall Address Objects</summary>
-
-```bash
-# Create address objects playbook
-cat << 'EOF' > playbooks/create_address_objects.yml
----
-- name: Configure FortiGate Address Objects
-  hosts: fortigates
-  gather_facts: no
-  
-  tasks:
-    - name: Create Server-Web address
-      fortinet.fortios.fortios_firewall_address:
-        vdom: root
-        state: present
-        firewall_address:
-          name: "Server-Web"
-          type: "ipmask"
-          subnet: "10.0.1.10/32"
-          comment: "Web Server"
-      
-    - name: Create Server-DB address
-      fortinet.fortios.fortios_firewall_address:
-        vdom: root
-        state: present
-        firewall_address:
-          name: "Server-DB"
-          type: "ipmask"
-          subnet: "10.0.2.10/32"
-          comment: "Database Server"
-      
-    - name: Create Network-LAN address
-      fortinet.fortios.fortios_firewall_address:
-        vdom: root
-        state: present
-        firewall_address:
-          name: "Network-LAN"
-          type: "ipmask"
-          subnet: "192.168.1.0/24"
-          comment: "Internal LAN"
-EOF
-
-# Run playbook
-ansible-playbook -i inventory/hosts playbooks/create_address_objects.yml --vault-password-file .vault_pass
-```
-
-</details>
-
-<details>
-<summary>7. Configure Firewall Policies</summary>
-
-```bash
-# Create firewall policy playbook
-cat << 'EOF' > playbooks/create_firewall_policy.yml
----
-- name: Configure FortiGate Firewall Policies
-  hosts: fortigates
-  gather_facts: no
-  
-  tasks:
-    - name: Allow LAN to Web Server
-      fortinet.fortios.fortios_firewall_policy:
-        vdom: root
-        state: present
-        firewall_policy:
-          policyid: 10
-          name: "Allow-LAN-to-Web"
-          action: "accept"
-          srcintf:
-            - name: "port2"
-          dstintf:
-            - name: "port3"
-          srcaddr:
-            - name: "Network-LAN"
-          dstaddr:
-            - name: "Server-Web"
-          service:
-            - name: "HTTP"
-            - name: "HTTPS"
-          schedule: "always"
-          nat: "disable"
-          logtraffic: "all"
-          comments: "Allow LAN to Web Server"
-EOF
-
-# Run playbook
-ansible-playbook -i inventory/hosts playbooks/create_firewall_policy.yml --vault-password-file .vault_pass
-```
-
-</details>
-
-<details>
-<summary>8. Backup FortiGate Configuration</summary>
-
-```bash
-# Create backup playbook
-cat << 'EOF' > playbooks/backup_config.yml
----
-- name: Backup FortiGate Configuration
-  hosts: fortigates
-  gather_facts: no
-  
-  tasks:
-    - name: Backup configuration
-      fortinet.fortios.fortios_monitor:
-        vdom: root
-        selector: "system_config_backup"
-        params:
-          scope: "global"
-      register: backup
-      
-    - name: Save backup to file
-      copy:
-        content: "{{ backup.meta }}"
-        dest: "./backups/{{ inventory_hostname }}_{{ ansible_date_time.date }}.conf"
-      delegate_to: localhost
-      
-    - name: Display backup location
-      debug:
-        msg: "Backup saved to: ./backups/{{ inventory_hostname }}_{{ ansible_date_time.date }}.conf"
-EOF
-
-# Create backup directory
-mkdir -p backups
-
-# Run backup playbook
-ansible-playbook -i inventory/hosts playbooks/backup_config.yml --vault-password-file .vault_pass
 ```
 
 </details>
 
 ### 🔗 Resources
 
-- [FortiOS Ansible Collection](https://galaxy.ansible.com/fortinet/fortios)
-- [Ansible Vault Documentation](https://docs.ansible.com/ansible/latest/user_guide/vault.html)
+- [Fortinet Ansible Collection](https://galaxy.ansible.com/fortinet/fortios)
+- [FortiOS Ansible Docs](https://ansible-galaxy-fortios-docs.readthedocs.io/)
 
 ---
 
@@ -975,281 +819,194 @@ ansible-playbook -i inventory/hosts playbooks/backup_config.yml --vault-password
 
 ### 📋 Overview
 
-Automate FortiGate using REST API with Postman and VS Code.
+Automate FortiGate using REST API with Postman and VS Code integration.
 
 ### 🎯 What You'll Learn
 
-- FortiGate REST API fundamentals
-- Test APIs with Postman
-- Python automation with requests library
-- GitHub workflow integration
+- FortiGate's API structure
+- Postman Collection Setup
+- VS Code API Query Setup
+- Postman - GitHub Integration
 
-### 💻 Commands
+### 📁 FortiGate API Structure
+
+```
+/api/v2/
+├── cmdb/      → Configuration (Create, Read, Update, Delete)
+├── monitor/   → Status & Monitoring (Read-only)
+└── log/       → Logs & Events (Read-only)
+```
+
+### 🔧 Postman Environment Variables
+
+| Variable | Value |
+|----------|-------|
+| `base_url` | `https://your-fortigate-ip` |
+| `api_token` | `your-api-token` |
+| `vdom` | `root` |
+
+### 💻 API Endpoints & Commands
 
 <details>
-<summary>1. Enable FortiGate API Access</summary>
+<summary>1. GET - System Monitoring</summary>
 
+**Endpoint:**
+```
+https://{{base_url}}/api/v2/monitor/system/status?vdom={{vdom}}
+```
+
+**cURL:**
 ```bash
-# On FortiGate CLI or GUI
-# CLI method:
-config system api-user
-    edit api-admin
-        set accprofile super_admin
-        set vdom root
-        set api-key YourAPIKeyHere
-        set comments "API access for automation"
-    next
-end
+curl -k -X GET "https://192.168.1.111/api/v2/monitor/system/status?vdom=root" \
+  -H "Authorization: Bearer YOUR_API_TOKEN"
+```
 
-# Or via GUI:
-# System > Administrators > Create New > REST API Admin
-# Profile: super_admin
-# Trusted Hosts: 0.0.0.0/0 (for testing - restrict in production)
-# Copy the API key!
+**Headers:**
+```
+Authorization: Bearer {{api_token}}
 ```
 
 </details>
 
 <details>
-<summary>2. Test API with cURL</summary>
+<summary>2. POST - Create Firewall Address</summary>
 
+**Endpoint:**
+```
+https://{{base_url}}/api/v2/cmdb/firewall/address?vdom={{vdom}}
+```
+
+**cURL:**
 ```bash
-# Set variables
-FORTIGATE_IP="192.168.1.99"
-API_KEY="YourAPIKeyHere"
+curl -k -X POST "https://192.168.1.111/api/v2/cmdb/firewall/address?vdom=root" \
+  -H "Authorization: Bearer YOUR_API_TOKEN" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "name": "API_Demo_Server",
+    "subnet": "10.0.5.100 255.255.255.255",
+    "type": "ipmask",
+    "comment": "Created via Postman API"
+  }'
+```
 
-# Get system status
-curl -k -X GET "https://${FORTIGATE_IP}/api/v2/monitor/system/status" \
-  -H "Authorization: Bearer ${API_KEY}"
-
-# Get firewall addresses
-curl -k -X GET "https://${FORTIGATE_IP}/api/v2/cmdb/firewall/address" \
-  -H "Authorization: Bearer ${API_KEY}"
-
-# Get firewall policies
-curl -k -X GET "https://${FORTIGATE_IP}/api/v2/cmdb/firewall/policy" \
-  -H "Authorization: Bearer ${API_KEY}"
+**Request Body (JSON):**
+```json
+{
+  "name": "API_Demo_Server",
+  "subnet": "10.0.5.100 255.255.255.255",
+  "type": "ipmask",
+  "comment": "Created via Postman API"
+}
 ```
 
 </details>
 
 <details>
-<summary>3. Install Postman</summary>
+<summary>3. PUT - Update Interface</summary>
 
-```bash
-# Download Postman from: https://www.postman.com/downloads/
-
-# Or install via snap (Linux)
-sudo snap install postman
-
-# Launch Postman
-postman
+**Endpoint:**
+```
+https://{{base_url}}/api/v2/cmdb/system/interface/port2?vdom={{vdom}}
 ```
 
-**Postman Collection Setup:**
-1. Create new collection: "FortiGate API"
-2. Add environment variable: `base_url` = `https://192.168.1.99`
-3. Add environment variable: `api_key` = `YourAPIKeyHere`
-4. Set Authorization: Bearer Token = `{{api_key}}`
-
-</details>
-
-<details>
-<summary>4. Python REST API Script</summary>
-
+**cURL:**
 ```bash
-# Create Python script
-cat << 'EOF' > fortigate_api.py
-#!/usr/bin/env python3
-import requests
-import json
-from urllib3.exceptions import InsecureRequestWarning
+curl -k -X PUT "https://192.168.1.111/api/v2/cmdb/system/interface/port2?vdom=root" \
+  -H "Authorization: Bearer YOUR_API_TOKEN" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "alias": "LAN-Internal",
+    "description": "Updated via Postman API"
+  }'
+```
 
-# Disable SSL warnings for self-signed certs
-requests.packages.urllib3.disable_warnings(category=InsecureRequestWarning)
-
-class FortiGateAPI:
-    def __init__(self, host, api_key):
-        self.host = host
-        self.api_key = api_key
-        self.base_url = f"https://{host}/api/v2"
-        self.headers = {"Authorization": f"Bearer {api_key}"}
-    
-    def get_system_status(self):
-        """Get FortiGate system status"""
-        url = f"{self.base_url}/monitor/system/status"
-        response = requests.get(url, headers=self.headers, verify=False)
-        return response.json()
-    
-    def get_firewall_addresses(self):
-        """Get all firewall address objects"""
-        url = f"{self.base_url}/cmdb/firewall/address"
-        response = requests.get(url, headers=self.headers, verify=False)
-        return response.json()
-    
-    def create_firewall_address(self, name, subnet, comment=""):
-        """Create firewall address object"""
-        url = f"{self.base_url}/cmdb/firewall/address"
-        data = {
-            "name": name,
-            "type": "ipmask",
-            "subnet": subnet,
-            "comment": comment
-        }
-        response = requests.post(url, headers=self.headers, 
-                               json=data, verify=False)
-        return response.json()
-    
-    def delete_firewall_address(self, name):
-        """Delete firewall address object"""
-        url = f"{self.base_url}/cmdb/firewall/address/{name}"
-        response = requests.delete(url, headers=self.headers, verify=False)
-        return response.json()
-
-# Example usage
-if __name__ == "__main__":
-    # Configuration
-    FORTIGATE_HOST = "192.168.1.99"
-    API_KEY = "YourAPIKeyHere"
-    
-    # Create API instance
-    fg = FortiGateAPI(FORTIGATE_HOST, API_KEY)
-    
-    # Get system status
-    print("=== System Status ===")
-    status = fg.get_system_status()
-    print(json.dumps(status, indent=2))
-    
-    # Create address object
-    print("\n=== Creating Address Object ===")
-    result = fg.create_firewall_address(
-        name="Test-Server",
-        subnet="10.10.10.10/32",
-        comment="Created via API"
-    )
-    print(json.dumps(result, indent=2))
-    
-    # Get all addresses
-    print("\n=== All Address Objects ===")
-    addresses = fg.get_firewall_addresses()
-    print(json.dumps(addresses, indent=2))
-EOF
-
-# Make executable
-chmod +x fortigate_api.py
-
-# Run script
-python3 fortigate_api.py
+**Request Body (JSON):**
+```json
+{
+  "alias": "LAN-Internal",
+  "description": "Updated via Postman API"
+}
 ```
 
 </details>
 
 <details>
-<summary>5. Install Required Python Libraries</summary>
+<summary>4. GET - Firewall Addresses & Policies</summary>
 
 ```bash
-# Activate virtual environment
-source ~/ansible-venv/bin/activate
+# Get all firewall addresses
+curl -k -X GET "https://192.168.1.111/api/v2/cmdb/firewall/address?vdom=root" \
+  -H "Authorization: Bearer YOUR_API_TOKEN"
 
-# Install requests library
-pip install requests urllib3
+# Get all firewall policies
+curl -k -X GET "https://192.168.1.111/api/v2/cmdb/firewall/policy?vdom=root" \
+  -H "Authorization: Bearer YOUR_API_TOKEN"
 
-# Create requirements.txt
-cat << 'EOF' > requirements.txt
-requests>=2.28.0
-urllib3>=1.26.0
-EOF
-
-# Install from requirements
-pip install -r requirements.txt
+# Get system interfaces
+curl -k -X GET "https://192.168.1.111/api/v2/cmdb/system/interface?vdom=root" \
+  -H "Authorization: Bearer YOUR_API_TOKEN"
 ```
 
 </details>
 
 <details>
-<summary>6. Advanced API Operations</summary>
+<summary>5. POST - Create Firewall Policy</summary>
 
-```bash
-# Create advanced API script
-cat << 'EOF' > fortigate_bulk_operations.py
-#!/usr/bin/env python3
-import requests
-import json
-from urllib3.exceptions import InsecureRequestWarning
+**Endpoint:**
+```
+https://{{base_url}}/api/v2/cmdb/firewall/policy?vdom={{vdom}}
+```
 
-requests.packages.urllib3.disable_warnings(category=InsecureRequestWarning)
+**Request Body (JSON):**
+```json
+{
+  "name": "Allow-Web-Traffic",
+  "srcintf": [{"name": "port1"}],
+  "dstintf": [{"name": "port2"}],
+  "srcaddr": [{"name": "all"}],
+  "dstaddr": [{"name": "API_Demo_Server"}],
+  "service": [{"name": "HTTP"}, {"name": "HTTPS"}],
+  "action": "accept",
+  "status": "enable"
+}
+```
 
-class FortiGateAPI:
-    def __init__(self, host, api_key):
-        self.host = host
-        self.api_key = api_key
-        self.base_url = f"https://{host}/api/v2"
-        self.headers = {"Authorization": f"Bearer {api_key}"}
-    
-    def bulk_create_addresses(self, address_list):
-        """Create multiple address objects"""
-        results = []
-        for addr in address_list:
-            url = f"{self.base_url}/cmdb/firewall/address"
-            response = requests.post(url, headers=self.headers, 
-                                   json=addr, verify=False)
-            results.append({
-                "name": addr["name"],
-                "status": response.status_code,
-                "result": response.json()
-            })
-        return results
-    
-    def get_firewall_policies(self):
-        """Get all firewall policies"""
-        url = f"{self.base_url}/cmdb/firewall/policy"
-        response = requests.get(url, headers=self.headers, verify=False)
-        return response.json()
-    
-    def backup_configuration(self):
-        """Backup full configuration"""
-        url = f"{self.base_url}/monitor/system/config/backup"
-        response = requests.get(url, headers=self.headers, verify=False)
-        return response.content
+</details>
 
-# Example: Bulk create address objects
-if __name__ == "__main__":
-    FORTIGATE_HOST = "192.168.1.99"
-    API_KEY = "YourAPIKeyHere"
-    
-    fg = FortiGateAPI(FORTIGATE_HOST, API_KEY)
-    
-    # Define addresses to create
-    addresses = [
-        {"name": "Server-Web-01", "type": "ipmask", "subnet": "10.0.1.10/32"},
-        {"name": "Server-Web-02", "type": "ipmask", "subnet": "10.0.1.11/32"},
-        {"name": "Server-DB-01", "type": "ipmask", "subnet": "10.0.2.10/32"},
-        {"name": "Server-DB-02", "type": "ipmask", "subnet": "10.0.2.11/32"}
-    ]
-    
-    # Bulk create
-    print("Creating address objects...")
-    results = fg.bulk_create_addresses(addresses)
-    print(json.dumps(results, indent=2))
-    
-    # Backup configuration
-    print("\nBacking up configuration...")
-    backup = fg.backup_configuration()
-    with open("fortigate_backup.conf", "wb") as f:
-        f.write(backup)
-    print("Backup saved to: fortigate_backup.conf")
-EOF
+<details>
+<summary>6. Common API Endpoints Reference</summary>
 
-chmod +x fortigate_bulk_operations.py
-python3 fortigate_bulk_operations.py
+**System Monitoring (GET only):**
+```
+/api/v2/monitor/system/status
+/api/v2/monitor/system/interface
+/api/v2/monitor/system/resource/usage
+/api/v2/monitor/firewall/session
+```
+
+**Configuration (GET, POST, PUT, DELETE):**
+```
+/api/v2/cmdb/system/interface
+/api/v2/cmdb/system/global
+/api/v2/cmdb/firewall/address
+/api/v2/cmdb/firewall/addrgrp
+/api/v2/cmdb/firewall/policy
+/api/v2/cmdb/firewall/service/custom
+/api/v2/cmdb/router/static
+```
+
+**Logs (GET only):**
+```
+/api/v2/log/memory/filter
+/api/v2/log/disk/filter
 ```
 
 </details>
 
 ### 🔗 Resources
 
-- [FortiGate REST API Documentation](https://docs.fortinet.com/document/fortigate/7.4.0/rest-api-reference)
-- [Postman](https://www.postman.com/)
+- [FortiGate REST API Guide](https://docs.fortinet.com/document/fortigate/7.0.0/administration-guide/940602/rest-api)
+- [Postman Download](https://www.postman.com/downloads/)
 
 ---
 
@@ -3932,6 +3689,18 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 ---
 
 ## 📝 Changelog
+
+### v18.0 (2025-01-13)
+- ✅ Video 5: Fixed content to match actual video (Ansible Vault + Demo Playbooks)
+  - Corrected "What You'll Learn" section
+  - Added proper project structure with host_vars
+  - Added specific playbook names: fortigate_system_info.yml, fortigate_create_policy.yml
+- ✅ Video 6: Fixed content to match actual video (Postman + VS Code + GitHub)
+  - Corrected "What You'll Learn" section
+  - Added API Structure diagram
+  - Added Postman Environment Variables table
+  - Removed incorrect Python script content
+
 
 ### v16.0 (2025-01-12)
 - ✅ Video 13: Added complete Claude CLI commands (`claude mcp add`, `claude mcp list`, `claude`)

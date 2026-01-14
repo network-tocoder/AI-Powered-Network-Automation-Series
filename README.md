@@ -3017,7 +3017,7 @@ claude mcp add device-commands -- uv --directory /new/path run python device_mcp
 
 ## Video 14: Ansible Dynamic Inventory with NetBox
 
-[▶️ Watch on YouTube](https://www.youtube.com/watch?v=YwZ6c96R_v0)
+[▶️ Watch on YouTube](https://www.youtube.com/watch?v=vtDuhAP-KfQ)
 
 ### 📋 Overview
 

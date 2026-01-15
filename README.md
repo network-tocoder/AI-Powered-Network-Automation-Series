@@ -3699,26 +3699,26 @@ Integrate MCP with Ansible to trigger playbooks via natural language using Claud
 
 ```
 ┌─────────────────────────────────────────────────────────────────────────────┐
-│                         ANSIBLE MCP ARCHITECTURE                             │
+│                         ANSIBLE MCP ARCHITECTURE                            │
 └─────────────────────────────────────────────────────────────────────────────┘
 
                               NATURAL LANGUAGE
                                     │
                                     ▼
 ┌─────────────────────────────────────────────────────────────────────────────┐
-│                              CLAUDE CLI                                      │
-│                         "Backup all routers"                                 │
+│                              CLAUDE CLI                                     │
+│                         "Backup all routers"                                │
 └─────────────────────────────────────────────────────────────────────────────┘
                                     │
                                     ▼ MCP Protocol
 ┌─────────────────────────────────────────────────────────────────────────────┐
-│                           ANSIBLE MCP SERVER                                 │
-│                                                                              │
+│                           ANSIBLE MCP SERVER                                │
+│                                                                             │
 │   ┌─────────────────┐  ┌─────────────────┐  ┌─────────────────┐             │
 │   │  list_playbooks │  │  run_playbook   │  │  get_inventory  │             │
 │   │     (tool)      │  │     (tool)      │  │     (tool)      │             │
 │   └─────────────────┘  └─────────────────┘  └─────────────────┘             │
-│                              FastMCP                                         │
+│                              FastMCP                                        │
 └─────────────────────────────────────────────────────────────────────────────┘
                                     │
                     ┌───────────────┼───────────────┐
@@ -3731,8 +3731,8 @@ Integrate MCP with Ansible to trigger playbooks via natural language using Claud
                     └───────────────┼───────────────┘
                                     ▼
 ┌─────────────────────────────────────────────────────────────────────────────┐
-│                              ANSIBLE CORE                                    │
-│                    inventory/netbox.yml (Dynamic Inventory)                  │
+│                              ANSIBLE CORE                                   │
+│                    inventory/netbox.yml (Dynamic Inventory)                 │
 └─────────────────────────────────────────────────────────────────────────────┘
                                     │
                                     ▼ NetBox API
@@ -3753,44 +3753,44 @@ Integrate MCP with Ansible to trigger playbooks via natural language using Claud
 
 ```
 ┌─────────────────────────────────────────────────────────────────────────────┐
-│                      HOW ANSIBLE MCP INTEGRATION WORKS                       │
+│                      HOW ANSIBLE MCP INTEGRATION WORKS                      │
 └─────────────────────────────────────────────────────────────────────────────┘
 
 Step 1: User Request
 ┌─────────────────────────────────────────────────────────────────────────────┐
-│  User: "Backup configuration on all routers in Main-DC"                      │
+│  User: "Backup configuration on all routers in Main-DC"                     │
 └─────────────────────────────────────────────────────────────────────────────┘
                                     │
                                     ▼
 Step 2: Claude Understands Intent
 ┌─────────────────────────────────────────────────────────────────────────────┐
-│  Claude identifies:                                                          │
-│  - Action: backup                                                            │
-│  - Playbook: backup_config.yml                                               │
-│  - Target: --limit sites_main-dc                                             │
+│  Claude identifies:                                                         │
+│  - Action: backup                                                           │
+│  - Playbook: backup_config.yml                                              │
+│  - Target: --limit sites_main-dc                                            │
 └─────────────────────────────────────────────────────────────────────────────┘
                                     │
                                     ▼
 Step 3: MCP Tool Call
 ┌─────────────────────────────────────────────────────────────────────────────┐
-│  Claude calls: run_playbook(                                                 │
-│      playbook="backup_config.yml",                                           │
-│      limit="sites_main-dc"                                                   │
-│  )                                                                           │
+│  Claude calls: run_playbook(                                                │
+│      playbook="backup_config.yml",                                          │
+│      limit="sites_main-dc"                                                  │
+│  )                                                                          │
 └─────────────────────────────────────────────────────────────────────────────┘
                                     │
                                     ▼
 Step 4: Ansible Execution
 ┌─────────────────────────────────────────────────────────────────────────────┐
-│  MCP Server runs:                                                            │
-│  ansible-playbook playbooks/backup_config.yml --limit sites_main-dc          │
+│  MCP Server runs:                                                           │
+│  ansible-playbook playbooks/backup_config.yml --limit sites_main-d          │
 └─────────────────────────────────────────────────────────────────────────────┘
                                     │
                                     ▼
 Step 5: Results Returned
 ┌─────────────────────────────────────────────────────────────────────────────┐
-│  Claude: "Successfully backed up 3 routers in Main-DC site:                  │
-│           vIOS-R1, vIOS-R2, vIOS-R3. Configs saved to ./backups/"            │
+│  Claude: "Successfully backed up 3 routers in Main-DC site:                 │
+│           vIOS-R1, vIOS-R2, vIOS-R3. Configs saved to ./backups/            │
 └─────────────────────────────────────────────────────────────────────────────┘
 ```
 
@@ -3798,8 +3798,9 @@ Step 5: Results Returned
 
 ```
 ┌─────────────────────────────────────────────────────────────────────────────┐
-│                         HOME LAB - VIDEO 15 SETUP                            │
+│                         HOME LAB - VIDEO 15 SETUP                           │
 └─────────────────────────────────────────────────────────────────────────────┘
+
 
                               ┌──────────────────┐
                               │   Home Network   │

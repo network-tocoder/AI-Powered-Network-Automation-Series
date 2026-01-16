@@ -3680,162 +3680,75 @@ ansible-project/
 ---
 
 
+
 ## Video 15: Ansible MCP Integration
 
 🔜 **Coming Soon**
 
 ### 📋 Overview
 
-Integrate MCP with Ansible to trigger playbooks via natural language using Claude CLI. This video connects Video 13 (Custom MCP Server) with Video 14 (Ansible Dynamic Inventory) to create a complete AI-powered automation workflow.
+Integrate MCP with Ansible to trigger playbooks via natural language using Claude CLI.
 
 ### 🎯 What You'll Learn
 
 - Build MCP server that runs Ansible playbooks
 - Natural language to Ansible automation
 - Integration with NetBox dynamic inventory
-- Run playbooks with --limit targeting
 
 ### 🏗️ Architecture
 
 ```
 ┌─────────────────────────────────────────────────────────────────────────────┐
-│                         ANSIBLE MCP ARCHITECTURE                            │
+│                         ANSIBLE MCP ARCHITECTURE                             │
 └─────────────────────────────────────────────────────────────────────────────┘
 
-                              NATURAL LANGUAGE
-                                    │
-                                    ▼
-┌─────────────────────────────────────────────────────────────────────────────┐
-│                              CLAUDE CLI                                     │
-│                         "Backup all routers"                                │
-└─────────────────────────────────────────────────────────────────────────────┘
-                                    │
-                                    ▼ MCP Protocol
-┌─────────────────────────────────────────────────────────────────────────────┐
-│                           ANSIBLE MCP SERVER                                │
-│                                                                             │
-│   ┌─────────────────┐  ┌─────────────────┐  ┌─────────────────┐             │
-│   │  list_playbooks │  │  run_playbook   │  │  get_inventory  │             │
-│   │     (tool)      │  │     (tool)      │  │     (tool)      │             │
-│   └─────────────────┘  └─────────────────┘  └─────────────────┘             │
-│                              FastMCP                                        │
-└─────────────────────────────────────────────────────────────────────────────┘
-                                    │
-                    ┌───────────────┼───────────────┐
-                    ▼               ▼               ▼
-           ┌──────────────┐ ┌──────────────┐ ┌──────────────┐
-           │ backup.yml   │ │ show_ver.yml │ │ config.yml   │
-           │   Playbook   │ │   Playbook   │ │   Playbook   │
-           └──────────────┘ └──────────────┘ └──────────────┘
-                    │               │               │
-                    └───────────────┼───────────────┘
-                                    ▼
-┌─────────────────────────────────────────────────────────────────────────────┐
-│                              ANSIBLE CORE                                   │
-│                    inventory/netbox.yml (Dynamic Inventory)                 │
-└─────────────────────────────────────────────────────────────────────────────┘
-                                    │
-                                    ▼ NetBox API
-                           ┌──────────────────┐
-                           │      NetBox      │
-                           │  192.168.1.120   │
-                           └──────────────────┘
-                                    │
-                    ┌───────────────┼───────────────┐
-                    ▼               ▼               ▼
-             ┌──────────┐    ┌──────────┐    ┌──────────┐
-             │ vIOS-R1  │    │ vIOS-R2  │    │ vIOS-R3  │
-             │  .201    │    │  .202    │    │  .203    │
-             └──────────┘    └──────────┘    └──────────┘
-```
-
-### 🔄 How It Works
-
-```
-┌─────────────────────────────────────────────────────────────────────────────┐
-│                      HOW ANSIBLE MCP INTEGRATION WORKS                      │
-└─────────────────────────────────────────────────────────────────────────────┘
-
-Step 1: User Request
-┌─────────────────────────────────────────────────────────────────────────────┐
-│  User: "Backup configuration on all routers in Main-DC"                     │
-└─────────────────────────────────────────────────────────────────────────────┘
-                                    │
-                                    ▼
-Step 2: Claude Understands Intent
-┌─────────────────────────────────────────────────────────────────────────────┐
-│  Claude identifies:                                                         │
-│  - Action: backup                                                           │
-│  - Playbook: backup_config.yml                                              │
-│  - Target: --limit sites_main-dc                                            │
-└─────────────────────────────────────────────────────────────────────────────┘
-                                    │
-                                    ▼
-Step 3: MCP Tool Call
-┌─────────────────────────────────────────────────────────────────────────────┐
-│  Claude calls: run_playbook(                                                │
-│      playbook="backup_config.yml",                                          │
-│      limit="sites_main-dc"                                                  │
-│  )                                                                          │
-└─────────────────────────────────────────────────────────────────────────────┘
-                                    │
-                                    ▼
-Step 4: Ansible Execution
-┌─────────────────────────────────────────────────────────────────────────────┐
-│  MCP Server runs:                                                           │
-│  ansible-playbook playbooks/backup_config.yml --limit sites_main-d          │
-└─────────────────────────────────────────────────────────────────────────────┘
-                                    │
-                                    ▼
-Step 5: Results Returned
-┌─────────────────────────────────────────────────────────────────────────────┐
-│  Claude: "Successfully backed up 3 routers in Main-DC site:                 │
-│           vIOS-R1, vIOS-R2, vIOS-R3. Configs saved to ./backups/            │
-└─────────────────────────────────────────────────────────────────────────────┘
+                         "Backup all routers"
+                                  │
+                                  ▼
+                        ┌─────────────────┐
+                        │   Claude CLI    │
+                        └────────┬────────┘
+                                 │ MCP Protocol
+                                 ▼
+                        ┌─────────────────┐
+                        │  Ansible MCP    │
+                        │    Server       │
+                        │                 │
+                        │  - list_playbooks
+                        │  - run_playbook │
+                        │  - get_inventory│
+                        └────────┬────────┘
+                                 │
+              ┌──────────────────┼──────────────────┐
+              ▼                  ▼                  ▼
+       ┌────────────┐    ┌────────────┐    ┌────────────┐
+       │ backup.yml │    │ show_ver.yml│    │ config.yml │
+       └────────────┘    └────────────┘    └────────────┘
+                                 │
+                                 ▼
+                        ┌─────────────────┐
+                        │  Ansible Core   │
+                        │  (NetBox Inv)   │
+                        └────────┬────────┘
+                                 │
+              ┌──────────────────┼──────────────────┐
+              ▼                  ▼                  ▼
+         ┌────────┐        ┌────────┐        ┌────────┐
+         │vIOS-R1 │        │vIOS-R2 │        │vIOS-R3 │
+         └────────┘        └────────┘        └────────┘
 ```
 
 ### 🏠 Home LAB Setup
 
 ```
-┌─────────────────────────────────────────────────────────────────────────────┐
-│                         HOME LAB - VIDEO 15 SETUP                           │
-└─────────────────────────────────────────────────────────────────────────────┘
-
-
-                              ┌──────────────────┐
-                              │   Home Network   │
-                              │  192.168.1.0/24  │
-                              └────────┬─────────┘
-                                       │
-          ┌────────────────────────────┼────────────────────────────┐
-          │                            │                            │
-          ▼                            ▼                            ▼
 ┌──────────────────┐      ┌──────────────────┐      ┌──────────────────┐
 │   Ansible Node   │      │      NetBox      │      │     EVE-NG       │
 │  192.168.1.119   │      │  192.168.1.120   │      │  192.168.1.100   │
 │                  │      │                  │      │                  │
-│ - Claude CLI     │      │ - Docker         │      │ - vIOS Routers   │
-│ - Ansible Core   │      │ - DIODE          │      │   - R1 (.201)    │
-│ - Ansible MCP    │      │ - Device Data    │      │   - R2 (.202)    │
-│ - Python/FastMCP │      │                  │      │   - R3 (.203)    │
+│ - Claude CLI     │      │ - Device Data    │      │ - vIOS-R1 (.201) │
+│ - Ansible MCP    │      │                  │      │ - vIOS-R2 (.202) │
+│ - Ansible Core   │      │                  │      │ - vIOS-R3 (.203) │
 └──────────────────┘      └──────────────────┘      └──────────────────┘
-```
-
-### 📁 Project Structure
-
-```
-~/mcp-servers/
-└── ansible_mcp.py              # Ansible MCP Server
-
-~/ansible-project/
-├── ansible.cfg
-├── inventory/
-│   └── netbox.yml              # Dynamic inventory (from Video 14)
-├── playbooks/
-│   ├── show_version.yml
-│   ├── backup_config.yml       # NEW: Backup playbook
-│   └── configure_ntp.yml       # NEW: Config playbook
-└── backups/                    # Created by backup playbook
 ```
 
 ### 💻 Commands
@@ -3848,45 +3761,58 @@ Step 5: Results Returned
 netdev
 cd ~/ansible-project
 
-# Verify dynamic inventory is working
+# Verify dynamic inventory works
 ansible-inventory --graph
 
-# Expected output:
-# @all:
-#   |--@device_roles_router:
-#   |  |--vIOS-R1
-#   |  |--vIOS-R2
-#   |  |--vIOS-R3
-#   |--@sites_main-dc:
-#   |  |--vIOS-R1
-#   |  |--vIOS-R2
-#   |  |--vIOS-R3
+# Expected: Shows vIOS-R1, R2, R3 from NetBox
 ```
 
 </details>
 
 <details>
-<summary>2. Create Ansible MCP Server</summary>
+<summary>2. Install MCP Dependencies</summary>
 
 ```bash
-# Create MCP servers directory
+# Activate your ansible environment
+netdev
+
+# Install FastMCP
+pip install fastmcp
+
+# Verify
+pip show fastmcp
+```
+
+</details>
+
+<details>
+<summary>3. Create MCP Server Directory</summary>
+
+```bash
+# Create directory for MCP servers
 mkdir -p ~/mcp-servers
 cd ~/mcp-servers
+```
 
-# Create ansible_mcp.py
-cat << 'EOF' > ansible_mcp.py
+</details>
+
+<details>
+<summary>4. Create Ansible MCP Server</summary>
+
+```bash
+# Create the MCP server file
+cat << 'EOF' > ~/mcp-servers/ansible_mcp.py
 #!/usr/bin/env python3
 """Ansible MCP Server - Run playbooks via natural language"""
 
 from mcp.server.fastmcp import FastMCP
 import subprocess
-import os
 from pathlib import Path
 
 mcp = FastMCP("Ansible MCP Server")
 
-PLAYBOOK_DIR = Path.home() / "ansible-project" / "playbooks"
 ANSIBLE_DIR = Path.home() / "ansible-project"
+PLAYBOOK_DIR = ANSIBLE_DIR / "playbooks"
 
 @mcp.tool()
 def list_playbooks() -> str:
@@ -3894,96 +3820,58 @@ def list_playbooks() -> str:
     playbooks = list(PLAYBOOK_DIR.glob("*.yml"))
     if not playbooks:
         return "No playbooks found"
-    
     result = "Available playbooks:\n"
     for pb in playbooks:
         result += f"  - {pb.name}\n"
     return result
 
 @mcp.tool()
-def run_playbook(playbook: str, limit: str = None, check_mode: bool = False) -> str:
+def run_playbook(playbook: str, limit: str = None) -> str:
     """
     Run an Ansible playbook
     
     Args:
-        playbook: Name of playbook file (e.g., backup_config.yml)
-        limit: Limit to specific hosts/groups (e.g., sites_main-dc, vIOS-R1)
-        check_mode: If True, run in check mode (dry run)
+        playbook: Playbook filename (e.g., backup_config.yml)
+        limit: Limit to hosts/groups (e.g., sites_main-dc, vIOS-R1)
     """
     playbook_path = PLAYBOOK_DIR / playbook
-    
     if not playbook_path.exists():
-        return f"Error: Playbook '{playbook}' not found. Use list_playbooks to see available playbooks."
+        return f"Error: Playbook '{playbook}' not found"
     
     cmd = ["ansible-playbook", str(playbook_path)]
-    
     if limit:
         cmd.extend(["--limit", limit])
     
-    if check_mode:
-        cmd.append("--check")
-    
     try:
         result = subprocess.run(
-            cmd,
-            cwd=ANSIBLE_DIR,
-            capture_output=True,
-            text=True,
-            timeout=300
+            cmd, cwd=ANSIBLE_DIR,
+            capture_output=True, text=True, timeout=300
         )
-        
-        output = result.stdout + result.stderr
-        
-        if result.returncode == 0:
-            return f"Playbook completed successfully!\n\n{output}"
-        else:
-            return f"Playbook failed!\n\n{output}"
-            
-    except subprocess.TimeoutExpired:
-        return "Error: Playbook timed out after 5 minutes"
+        return result.stdout + result.stderr
     except Exception as e:
         return f"Error: {str(e)}"
 
 @mcp.tool()
 def get_inventory() -> str:
-    """Get current Ansible inventory from NetBox (dynamic inventory)"""
-    try:
-        result = subprocess.run(
-            ["ansible-inventory", "--graph"],
-            cwd=ANSIBLE_DIR,
-            capture_output=True,
-            text=True
-        )
-        return f"Current inventory (from NetBox):\n{result.stdout}"
-    except Exception as e:
-        return f"Error: {str(e)}"
-
-@mcp.tool()
-def get_host_details(hostname: str) -> str:
-    """Get detailed variables for a specific host"""
-    try:
-        result = subprocess.run(
-            ["ansible-inventory", "--host", hostname],
-            cwd=ANSIBLE_DIR,
-            capture_output=True,
-            text=True
-        )
-        return f"Host details for {hostname}:\n{result.stdout}"
-    except Exception as e:
-        return f"Error: {str(e)}"
+    """Get current Ansible inventory from NetBox"""
+    result = subprocess.run(
+        ["ansible-inventory", "--graph"],
+        cwd=ANSIBLE_DIR, capture_output=True, text=True
+    )
+    return result.stdout
 
 if __name__ == "__main__":
     mcp.run()
 EOF
 
 # Make executable
-chmod +x ansible_mcp.py
+chmod +x ~/mcp-servers/ansible_mcp.py
 ```
 
 </details>
 
 <details>
-<summary>3. Create Backup Playbook</summary>
+<summary>5. Create Backup Playbook</summary>
 
 ```bash
 # Create backup playbook
@@ -4005,118 +3893,96 @@ cat << 'EOF' > ~/ansible-project/playbooks/backup_config.yml
         state: directory
       run_once: true
 
-    - name: Get current timestamp
-      set_fact:
-        timestamp: "{{ lookup('pipe', 'date +%Y%m%d_%H%M%S') }}"
-      run_once: true
-
     - name: Backup running config
       raw: show running-config
       register: config
 
-    - name: Save config to file
+    - name: Save config
       delegate_to: localhost
       copy:
         content: "{{ config.stdout }}"
-        dest: "{{ backup_dir }}/{{ inventory_hostname }}_{{ timestamp }}.cfg"
-
-    - name: Display backup status
-      debug:
-        msg: "Backup saved: {{ backup_dir }}/{{ inventory_hostname }}_{{ timestamp }}.cfg"
+        dest: "{{ backup_dir }}/{{ inventory_hostname }}.cfg"
 EOF
 ```
 
 </details>
 
 <details>
-<summary>4. Create NTP Configuration Playbook</summary>
+<summary>6. Test MCP Server (Optional)</summary>
 
 ```bash
-# Create NTP config playbook
-cat << 'EOF' > ~/ansible-project/playbooks/configure_ntp.yml
----
-- name: Configure NTP on Network Devices
-  hosts: all
-  gather_facts: no
-  vars:
-    ansible_user: ansible
-    ansible_ssh_password: ansible@123
-    ntp_servers:
-      - 192.168.1.1
-      - pool.ntp.org
+# Quick syntax check
+python -c "import sys; sys.path.insert(0, '.'); exec(open('ansible_mcp.py').read().split('if __name__')[0]); print('OK')"
 
-  tasks:
-    - name: Configure NTP servers
-      raw: |
-        configure terminal
-        ntp server {{ ntp_servers[0] }}
-        ntp server {{ ntp_servers[1] }}
-        end
-        write memory
-      register: ntp_result
-
-    - name: Verify NTP configuration
-      raw: show ntp associations
-      register: ntp_status
-
-    - name: Display NTP status
-      debug:
-        msg: "{{ ntp_status.stdout_lines }}"
-EOF
+# Or just verify imports work
+python -c "from mcp.server.fastmcp import FastMCP; print('FastMCP OK')"
 ```
 
 </details>
 
 <details>
-<summary>5. Install Dependencies & Add to Claude CLI</summary>
+<summary>7. Add MCP Server to Claude CLI</summary>
 
 ```bash
-# Ensure FastMCP is installed
-pip install mcp fastmcp
+# Get the python path from your venv
+which python
+# Example output: /home/user/ansible-project/ansible-venv/bin/python
 
-# Add to Claude CLI
-claude mcp add ansible-mcp python ~/mcp-servers/ansible_mcp.py
+# Add to Claude CLI (use YOUR python path)
+claude mcp add ansible-mcp /home/user/ansible-project/ansible-venv/bin/python /home/user/mcp-servers/ansible_mcp.py
 
-# Verify MCP servers
+# Verify connection
 claude mcp list
 
-# Expected output:
-# - netbox (if from Video 12)
-# - device-mcp (if from Video 13)
-# - ansible-mcp (NEW)
+# Expected: ansible-mcp: ... - ✓ Connected
 ```
 
 </details>
 
 <details>
-<summary>6. Test with Claude CLI</summary>
+<summary>8. Test with Claude</summary>
 
 ```bash
 # Start Claude CLI
 claude
 
-# Example queries to try:
+# Try these queries:
+# "List available playbooks"
+# "Show me the current inventory"
+# "Run backup_config playbook on all routers"
+# "Run backup on vIOS-R1 only"
+```
 
-# List playbooks
-"What Ansible playbooks are available?"
+</details>
 
-# Get inventory
-"Show me the current network inventory"
+### 🔧 Troubleshooting
 
-# Run backup on all devices
-"Backup the configuration on all routers"
+<details>
+<summary>Failed to Connect Error</summary>
 
-# Run backup on specific site
-"Backup configs for all devices in the main-dc site"
+```bash
+# 1. Check python path is correct
+which python
 
-# Run on specific device
-"Run the show_version playbook on vIOS-R1 only"
+# 2. Remove and re-add
+claude mcp remove ansible-mcp
+claude mcp add ansible-mcp $(which python) /home/user/mcp-servers/ansible_mcp.py
 
-# Dry run
-"Do a dry run of the NTP configuration playbook"
+# 3. Check Claude config
+cat ~/.claude.json | grep -A 5 "ansible-mcp"
+```
 
-# Get host details
-"Show me the details for vIOS-R1"
+</details>
+
+<details>
+<summary>Module Not Found Error</summary>
+
+```bash
+# Make sure fastmcp is installed in YOUR active environment
+pip install fastmcp
+
+# Verify
+pip show fastmcp
 ```
 
 </details>
@@ -4124,31 +3990,18 @@ claude
 ### 📦 Example Queries
 
 ```bash
-# List available playbooks
-"What Ansible playbooks can you run?"
+# List playbooks
+"What Ansible playbooks are available?"
 
-# Run playbooks via natural language
+# Run on all devices
 "Run the backup playbook on all routers"
-"Backup the configuration of all devices in Main-DC"
-"Execute the show_version playbook on vIOS-R1"
 
-# Combine with NetBox dynamic inventory groups
-"Run backup on all devices in sites_main-dc group"
-"Configure NTP on all device_roles_router"
+# Run on specific group (from NetBox)
+"Backup configs for devices in sites_main-dc"
 
-# Check mode (dry run)
-"Do a dry run of configure_ntp.yml on all routers"
-
-# Get information
-"Show me the current inventory"
-"What are the details for vIOS-R2?"
+# Run on single device
+"Execute show_version playbook on vIOS-R1 only"
 ```
-
-### 🔗 Resources
-
-- [FastMCP Documentation](https://github.com/jlowin/fastmcp)
-- [Ansible Playbook Documentation](https://docs.ansible.com/ansible/latest/playbook_guide/)
-- [MCP Protocol Specification](https://modelcontextprotocol.io/)
 
 ---
 
@@ -4158,422 +4011,59 @@ claude
 
 ### 📋 Overview
 
-Use Google's FREE Gemini CLI with remote MCP servers to control your network from anywhere. This video shows how to access your MCP servers (NetBox, Device, Ansible) remotely using SSE transport - no paid subscription required!
+Use Google's FREE Gemini CLI with remote MCP servers - no paid subscription required!
 
 ### 🎯 What You'll Learn
 
-- Install Gemini CLI (completely FREE)
-- Configure MCP servers for remote access (SSE transport)
-- Connect to existing MCP servers from any machine
-- Natural language network automation without subscriptions
+- Install Gemini CLI (FREE)
+- Configure remote MCP access (SSE transport)
+- Access network automation from anywhere
 
 ### 🆚 Why Gemini CLI?
 
 | Feature | Claude CLI | Gemini CLI |
 |---------|------------|------------|
-| **Cost** | Subscription required | ✅ FREE |
+| **Cost** | Subscription | ✅ FREE |
 | **MCP Support** | Yes | ✅ Yes |
-| **Remote MCP** | stdio (local) | ✅ SSE (remote) |
-| **Accessibility** | Paid users only | ✅ Everyone |
-| **Authentication** | Claude account | Google account |
+| **Remote Access** | Local only | ✅ SSE remote |
 
 ### 🏗️ Architecture
 
 ```
-┌─────────────────────────────────────────────────────────────────────────────┐
-│                      GEMINI CLI + REMOTE MCP ARCHITECTURE                    │
-└─────────────────────────────────────────────────────────────────────────────┘
-
-┌─────────────────────────────────────────────────────────────────────────────┐
-│                            YOUR LAPTOP / PC                                  │
-│                           (Any Location)                                     │
-│                                                                              │
-│   ┌─────────────────────────────────────────────────────────────────────┐   │
-│   │                         GEMINI CLI                                   │   │
-│   │                   "Backup all routers"                               │   │
-│   └─────────────────────────────────────────────────────────────────────┘   │
-│                                    │                                         │
-└────────────────────────────────────┼─────────────────────────────────────────┘
-                                     │
-                                     │ HTTP/SSE (Port 8080)
-                                     │ (Over Internet or VPN)
-                                     ▼
-┌─────────────────────────────────────────────────────────────────────────────┐
-│                         REMOTE SERVER (192.168.1.119)                        │
-│                                                                              │
-│   ┌─────────────────────────────────────────────────────────────────────┐   │
-│   │                    MCP SERVER (SSE Transport)                        │   │
-│   │                                                                      │   │
-│   │   ┌──────────────┐  ┌──────────────┐  ┌──────────────┐              │   │
-│   │   │  NetBox MCP  │  │  Device MCP  │  │ Ansible MCP  │              │   │
-│   │   │   (tools)    │  │   (tools)    │  │   (tools)    │              │   │
-│   │   └──────────────┘  └──────────────┘  └──────────────┘              │   │
-│   │                                                                      │   │
-│   └─────────────────────────────────────────────────────────────────────┘   │
-│                                    │                                         │
-│                    ┌───────────────┼───────────────┐                        │
-│                    ▼               ▼               ▼                        │
-│           ┌──────────────┐ ┌──────────────┐ ┌──────────────┐               │
-│           │    NetBox    │ │   SSH/CLI    │ │   Ansible    │               │
-│           │  (API)       │ │  (Netmiko)   │ │  (Playbooks) │               │
-│           └──────────────┘ └──────────────┘ └──────────────┘               │
-│                    │               │               │                        │
-└────────────────────┼───────────────┼───────────────┼────────────────────────┘
-                     │               │               │
-                     └───────────────┼───────────────┘
-                                     ▼
-                          ┌──────────────────┐
-                          │  Network Devices │
-                          │   R1, R2, R3     │
-                          └──────────────────┘
+┌─────────────────┐                    ┌─────────────────────────────┐
+│   Your Laptop   │                    │   Remote Server (.119)      │
+│   (Anywhere)    │                    │                             │
+│                 │     HTTP/SSE       │   ┌───────────────────┐     │
+│   Gemini CLI    │◄──────────────────►│   │  MCP Server (SSE) │     │
+│                 │     Port 8080      │   │  - NetBox tools   │     │
+│                 │                    │   │  - Ansible tools  │     │
+└─────────────────┘                    │   │  - Device tools   │     │
+                                       │   └─────────┬─────────┘     │
+                                       │             │               │
+                                       │             ▼               │
+                                       │   ┌───────────────────┐     │
+                                       │   │  Network Devices  │     │
+                                       │   └───────────────────┘     │
+                                       └─────────────────────────────┘
 ```
 
-### 🔄 Local vs Remote MCP
-
-```
-┌─────────────────────────────────────────────────────────────────────────────┐
-│                        LOCAL vs REMOTE MCP COMPARISON                        │
-└─────────────────────────────────────────────────────────────────────────────┘
-
-LOCAL MCP (Videos 12-15) - stdio transport:
-┌──────────────┐     ┌──────────────┐
-│  Claude CLI  │────►│  MCP Server  │     Same machine only
-│  (local)     │◄────│  (local)     │     Fast, but limited
-└──────────────┘     └──────────────┘
-
-
-REMOTE MCP (Video 16) - SSE transport:
-┌──────────────┐                        ┌──────────────┐
-│  Gemini CLI  │────── HTTP/SSE ───────►│  MCP Server  │
-│  (laptop)    │◄──────────────────────│  (server)    │
-└──────────────┘     Internet/VPN       └──────────────┘
-                     Access from anywhere!
-```
-
-### 🏠 Home LAB Setup
-
-```
-┌─────────────────────────────────────────────────────────────────────────────┐
-│                         HOME LAB - VIDEO 16 SETUP                            │
-└─────────────────────────────────────────────────────────────────────────────┘
-
-                    ┌─────────────────────────────────────┐
-                    │           INTERNET / VPN            │
-                    └──────────────────┬──────────────────┘
-                                       │
-       ┌───────────────────────────────┼───────────────────────────────┐
-       │                               │                               │
-       ▼                               ▼                               │
-┌─────────────┐                ┌──────────────────┐                    │
-│ Your Laptop │                │   Home Router    │                    │
-│ (Anywhere)  │                │  192.168.1.1     │                    │
-│             │                │  Port Forward:   │                    │
-│ Gemini CLI  │                │  8080 -> .119    │                    │
-└─────────────┘                └────────┬─────────┘                    │
-                                        │                              │
-                      ┌─────────────────┼─────────────────┐            │
-                      │                 │                 │            │
-                      ▼                 ▼                 ▼            │
-             ┌──────────────┐  ┌──────────────┐  ┌──────────────┐     │
-             │ Ansible Node │  │    NetBox    │  │    EVE-NG    │     │
-             │ 192.168.1.119│  │ 192.168.1.120│  │ 192.168.1.100│     │
-             │              │  │              │  │              │     │
-             │ MCP Server   │  │ Device Data  │  │ vIOS Routers │     │
-             │ (Port 8080)  │  │              │  │ R1,R2,R3     │     │
-             └──────────────┘  └──────────────┘  └──────────────┘     │
-                                                                       │
-└──────────────────────────────────────────────────────────────────────┘
-```
-
-### 💻 Commands
-
-<details>
-<summary>1. Install Gemini CLI</summary>
+### 💻 Commands (Preview)
 
 ```bash
-# Option 1: Using npm
+# Install Gemini CLI
 npm install -g @google/gemini-cli
 
-# Option 2: Using pip
-pip install gemini-cli
-
-# Verify installation
-gemini --version
-```
-
-</details>
-
-<details>
-<summary>2. Authenticate with Google Account</summary>
-
-```bash
-# Login with Google account (FREE!)
+# Authenticate (FREE - just Google account)
 gemini auth login
 
-# This opens browser for Google OAuth
-# No subscription required - just a Google account!
+# Add remote MCP server
+gemini mcp add network-automation --transport sse --url http://192.168.1.119:8080
 
-# Verify authentication
-gemini auth status
-```
-
-</details>
-
-<details>
-<summary>3. Create SSE MCP Server (on Ansible Node)</summary>
-
-```bash
-# On your Ansible node (192.168.1.119)
-cd ~/mcp-servers
-
-# Create unified MCP server with SSE transport
-cat << 'EOF' > unified_mcp_sse.py
-#!/usr/bin/env python3
-"""Unified MCP Server with SSE Transport for Remote Access"""
-
-from mcp.server.fastmcp import FastMCP
-from mcp.server.sse import SseServerTransport
-import subprocess
-from pathlib import Path
-import requests
-
-mcp = FastMCP("Network Automation MCP")
-
-ANSIBLE_DIR = Path.home() / "ansible-project"
-PLAYBOOK_DIR = ANSIBLE_DIR / "playbooks"
-NETBOX_URL = "http://192.168.1.120:8000"
-NETBOX_TOKEN = "your-netbox-token"
-
-# ==================== NetBox Tools ====================
-
-@mcp.tool()
-def netbox_list_devices() -> str:
-    """List all devices from NetBox"""
-    headers = {"Authorization": f"Token {NETBOX_TOKEN}"}
-    response = requests.get(f"{NETBOX_URL}/api/dcim/devices/", headers=headers)
-    devices = response.json().get('results', [])
-    
-    result = "Devices in NetBox:\n"
-    for device in devices:
-        result += f"  - {device['name']} ({device.get('primary_ip4', {}).get('address', 'No IP')})\n"
-    return result
-
-@mcp.tool()
-def netbox_get_device(name: str) -> str:
-    """Get details for a specific device from NetBox"""
-    headers = {"Authorization": f"Token {NETBOX_TOKEN}"}
-    response = requests.get(f"{NETBOX_URL}/api/dcim/devices/?name={name}", headers=headers)
-    devices = response.json().get('results', [])
-    
-    if not devices:
-        return f"Device '{name}' not found"
-    
-    device = devices[0]
-    return f"""Device: {device['name']}
-  Role: {device.get('role', {}).get('name', 'N/A')}
-  Site: {device.get('site', {}).get('name', 'N/A')}
-  IP: {device.get('primary_ip4', {}).get('address', 'N/A')}
-  Status: {device.get('status', {}).get('label', 'N/A')}"""
-
-# ==================== Ansible Tools ====================
-
-@mcp.tool()
-def ansible_list_playbooks() -> str:
-    """List all available Ansible playbooks"""
-    playbooks = list(PLAYBOOK_DIR.glob("*.yml"))
-    result = "Available playbooks:\n"
-    for pb in playbooks:
-        result += f"  - {pb.name}\n"
-    return result
-
-@mcp.tool()
-def ansible_run_playbook(playbook: str, limit: str = None) -> str:
-    """Run an Ansible playbook"""
-    playbook_path = PLAYBOOK_DIR / playbook
-    if not playbook_path.exists():
-        return f"Playbook '{playbook}' not found"
-    
-    cmd = ["ansible-playbook", str(playbook_path)]
-    if limit:
-        cmd.extend(["--limit", limit])
-    
-    result = subprocess.run(cmd, cwd=ANSIBLE_DIR, capture_output=True, text=True, timeout=300)
-    return result.stdout + result.stderr
-
-@mcp.tool()
-def ansible_get_inventory() -> str:
-    """Get current inventory from NetBox"""
-    result = subprocess.run(
-        ["ansible-inventory", "--graph"],
-        cwd=ANSIBLE_DIR, capture_output=True, text=True
-    )
-    return result.stdout
-
-# ==================== Device Tools ====================
-
-@mcp.tool()
-def device_run_command(hostname: str, command: str) -> str:
-    """Run a CLI command on a network device via SSH"""
-    from netmiko import ConnectHandler
-    
-    # Get device IP from NetBox
-    headers = {"Authorization": f"Token {NETBOX_TOKEN}"}
-    response = requests.get(f"{NETBOX_URL}/api/dcim/devices/?name={hostname}", headers=headers)
-    devices = response.json().get('results', [])
-    
-    if not devices:
-        return f"Device '{hostname}' not found in NetBox"
-    
-    ip = devices[0].get('primary_ip4', {}).get('address', '').split('/')[0]
-    
-    device = {
-        'device_type': 'cisco_ios',
-        'host': ip,
-        'username': 'ansible',
-        'password': 'ansible@123',
-    }
-    
-    try:
-        conn = ConnectHandler(**device)
-        output = conn.send_command(command)
-        conn.disconnect()
-        return f"Output from {hostname}:\n{output}"
-    except Exception as e:
-        return f"Error: {str(e)}"
-
-if __name__ == "__main__":
-    # Run with SSE transport on port 8080
-    mcp.run(transport="sse", host="0.0.0.0", port=8080)
-EOF
-
-chmod +x unified_mcp_sse.py
-```
-
-</details>
-
-<details>
-<summary>4. Start Remote MCP Server</summary>
-
-```bash
-# On Ansible node (192.168.1.119)
-cd ~/mcp-servers
-
-# Install dependencies
-pip install mcp fastmcp requests netmiko
-
-# Start server (runs on port 8080)
-python unified_mcp_sse.py
-
-# Or run in background
-nohup python unified_mcp_sse.py > mcp_server.log 2>&1 &
-
-# Verify server is running
-curl http://localhost:8080/health
-```
-
-</details>
-
-<details>
-<summary>5. Configure Gemini CLI (on Your Laptop)</summary>
-
-```bash
-# Add remote MCP server to Gemini CLI
-gemini mcp add network-automation \
-  --transport sse \
-  --url http://192.168.1.119:8080
-
-# Or if using port forwarding / public IP
-gemini mcp add network-automation \
-  --transport sse \
-  --url http://your-public-ip:8080
-
-# Verify connection
-gemini mcp list
-```
-
-</details>
-
-<details>
-<summary>6. Test Remote Access</summary>
-
-```bash
-# Start Gemini CLI
+# Start using
 gemini
-
-# Example queries (from anywhere!):
-
-# NetBox queries
-"List all devices in NetBox"
-"Show me details for vIOS-R1"
-
-# Ansible queries
-"What playbooks are available?"
-"Run the backup playbook on all routers"
-"Backup configs for devices in main-dc site"
-
-# Direct device access
-"Run 'show version' on vIOS-R1"
-"Get the routing table from vIOS-R2"
+> "List all devices in NetBox"
+> "Backup all router configs"
 ```
-
-</details>
-
-<details>
-<summary>7. Optional: Setup Port Forwarding</summary>
-
-```bash
-# On your home router, forward port 8080 to 192.168.1.119:8080
-# This allows access from outside your home network
-
-# Or use SSH tunnel from laptop
-ssh -L 8080:localhost:8080 user@your-home-ip
-
-# Then configure Gemini CLI with localhost
-gemini mcp add network-automation \
-  --transport sse \
-  --url http://localhost:8080
-```
-
-</details>
-
-### 📦 Example Queries
-
-```bash
-# From Gemini CLI (works from anywhere!)
-
-# Device management
-"List all devices in my network"
-"Show me the routers in Main-DC site"
-
-# Run commands
-"Run show version on vIOS-R1"
-"Check the interfaces on all routers"
-
-# Ansible automation
-"Backup all router configurations"
-"Run the NTP configuration playbook"
-"Execute backup on sites_main-dc group"
-
-# Combined workflows
-"Show me all devices, then backup their configs"
-"Find all routers and run show ip route on them"
-```
-
-### 🔐 Security Considerations
-
-| Consideration | Recommendation |
-|---------------|----------------|
-| **Network Access** | Use VPN or SSH tunnel for remote access |
-| **Authentication** | Add API key authentication to MCP server |
-| **Firewall** | Only expose port 8080 through VPN |
-| **HTTPS** | Use nginx reverse proxy with SSL certificate |
-| **Credentials** | Store device credentials in environment variables |
-
-### 🔗 Resources
-
-- [Gemini CLI Documentation](https://ai.google.dev/gemini-api/docs/gemini-cli)
-- [MCP SSE Transport](https://modelcontextprotocol.io/docs/transports/sse)
-- [Google AI Studio](https://aistudio.google.com/) (Free API key)
 
 ---
 
@@ -4584,97 +4074,21 @@ gemini mcp add network-automation \
 |----------|------|
 | EVE-NG | [eve-ng.net](https://www.eve-ng.net/) |
 | NetBox | [netbox.dev](https://netbox.dev/) |
-| Ansible Docs | [docs.ansible.com](https://docs.ansible.com/) |
-| Docker Docs | [docs.docker.com](https://docs.docker.com/) |
-| Fortinet Docs | [docs.fortinet.com](https://docs.fortinet.com/) |
-| pyATS Docs | [developer.cisco.com/pyats](https://developer.cisco.com/docs/pyats/) |
+| Ansible | [docs.ansible.com](https://docs.ansible.com/) |
 | MCP Protocol | [modelcontextprotocol.io](https://modelcontextprotocol.io/) |
+| FastMCP | [github.com/jlowin/fastmcp](https://github.com/jlowin/fastmcp) |
 | Gemini CLI | [ai.google.dev](https://ai.google.dev/gemini-api/docs/gemini-cli) |
-
----
-
-## 🤝 Connect With Me
-
-[![YouTube](https://img.shields.io/badge/YouTube-FF0000?style=for-the-badge&logo=youtube&logoColor=white)](https://youtube.com/@NetworkCoder)
-[![LinkedIn](https://img.shields.io/badge/LinkedIn-0077B5?style=for-the-badge&logo=linkedin&logoColor=white)](https://linkedin.com/in/hadeek)
-
----
-
-## 📄 License
-
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
 
 ---
 
 ## 📝 Changelog
 
-### v19.0 (2025-01-16)
-- ✅ Video 14: Added YouTube link
-- ✅ Video 15: Complete Ansible MCP Integration documentation
-  - Architecture diagram with detailed flow
-  - How it works step-by-step explanation
-  - Home LAB setup diagram
-  - Complete MCP server code (ansible_mcp.py)
-  - Backup and NTP configuration playbooks
-  - Example queries and commands
-- ✅ Video 16: NEW - Replaced pyATS with Gemini CLI + Remote MCP
-  - FREE alternative to Claude CLI
-  - Remote MCP access via SSE transport
-  - Unified MCP server with NetBox, Device, and Ansible tools
-  - Access network from anywhere
-  - Security considerations guide
-
-### v18.0 (2025-01-15)
-- ✅ Video 5: Fixed content to match actual video (Ansible Vault + Demo Playbooks)
-- ✅ Video 6: Fixed content to match actual video (Postman + VS Code + GitHub)
-
-### v17.0 (2025-01-14)
-- ✅ Video 14: Added complete Ansible Dynamic Inventory documentation
-  - NetBox inventory plugin configuration
-  - Auto-grouping by role, site, platform
-  - Troubleshooting section
-
-### v16.0 (2025-01-12)
-- ✅ Video 13: Added complete Claude CLI commands (`claude mcp add`, `claude mcp list`, `claude`)
-- ✅ Video 13: Added YouTube link: https://www.youtube.com/watch?v=vtDuhAP-KfQ
-- ✅ Fixed all ASCII diagrams with straight lines (no dotted borders)
-- ✅ Updated video index to 16 videos
-
-### v13.0 (2025-01-31)
-- ✅ Updated Video 11: MCP Fundamentals - Quick Breakdown (Theory Only)
-- ✅ Added YouTube link for Video 11: https://www.youtube.com/watch?v=DDQL5OQDLJU
-- ✅ Added Video 12: NetBox + MCP Hands-On Setup (Complete Hands-On Guide)
-- ✅ Split theory (Video 11) and hands-on (Video 12) into separate videos
-- ✅ Added comprehensive explanations for Node.js, NPM, UV, Claude offerings
-- ✅ Added Step 6 vs Step 7 difference explanation
-- ✅ Added login options (Subscription vs API) explanation
-- ✅ Added Demo Queries reference table
-- ✅ Added Troubleshooting section with common fixes
-- ✅ Updated NetBox URL to 192.168.1.20
-- ✅ Added Key Concepts table (Pontification, DCIM, IPAM)
-- ✅ Added Important Notes box (Read-only, No SSH)
-- ✅ Added Video 13: Custom MCP Server (Coming Soon)
-- ✅ Added Video 14: Ansible + MCP Integration (Coming Soon)
-- ✅ Added Video 15: pyATS + MCP Integration (Coming Soon)
-
-### v12.0 (2025-01-21)
-- ✅ Added comprehensive OAuth client secret error troubleshooting to Video 9
-- ✅ Documented "Missing netbox to diode client secret" error with screenshots
-- ✅ Added step-by-step verification and fix procedures
-- ✅ Included complete diagnostic commands and verification checklist
-- ✅ Added explanation of correct parameter names and common mistakes
-- ✅ Enhanced troubleshooting section with network connectivity fixes
-
-### v11.0 (2025-01-15)
-- ✅ Added Video 11: NetBox + MCP Integration
-- ✅ Comprehensive MCP setup documentation
-- ✅ Claude Code CLI installation guide
-- ✅ Natural language NetBox queries
-
-### v10.0 (2025-01-10)
-- Initial public release
-- Videos 1-10 complete documentation
-- Full command reference for all videos
+### v20.0 (2025-01-16)
+- ✅ Video 15: Simplified setup (pip instead of UV)
+  - Cleaner command flow
+  - Direct python path for Claude CLI
+  - Added troubleshooting section
+- ✅ Video 16: Updated Gemini CLI preview
 
 ---
 

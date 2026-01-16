@@ -3698,10 +3698,6 @@ Integrate MCP with Ansible to trigger playbooks via natural language using Claud
 ### 🏗️ Architecture
 
 ```
-┌─────────────────────────────────────────────────────────────────────────────┐
-│                         ANSIBLE MCP ARCHITECTURE                             │
-└─────────────────────────────────────────────────────────────────────────────┘
-
                          "Backup all routers"
                                   │
                                   ▼
@@ -3714,15 +3710,15 @@ Integrate MCP with Ansible to trigger playbooks via natural language using Claud
                         │  Ansible MCP    │
                         │    Server       │
                         │                 │
-                        │  - list_playbooks
-                        │  - run_playbook │
-                        │  - get_inventory│
+                        │ - list_playbooks│
+                        │ - run_playbook  │
+                        │ - get_inventory │
                         └────────┬────────┘
                                  │
               ┌──────────────────┼──────────────────┐
               ▼                  ▼                  ▼
        ┌────────────┐    ┌────────────┐    ┌────────────┐
-       │ backup.yml │    │ show_ver.yml│    │ config.yml │
+       │ backup.yml │    │ show_ver.yml│   │ config.yml │
        └────────────┘    └────────────┘    └────────────┘
                                  │
                                  ▼
@@ -3751,13 +3747,24 @@ Integrate MCP with Ansible to trigger playbooks via natural language using Claud
 └──────────────────┘      └──────────────────┘      └──────────────────┘
 ```
 
+### 📁 Project Structure
+
+```
+~/mcp-servers/
+├── device-mcp/              # From Video 13
+├── netbox-mcp-server/       # From Video 12
+└── ansible-mcp/             # NEW - This video
+    ├── .venv/               # Virtual environment
+    └── ansible_mcp.py       # MCP server script
+```
+
 ### 💻 Commands
 
 <details>
 <summary>1. Prerequisites - Verify Video 14 Setup</summary>
 
 ```bash
-# Activate environment
+# Activate ansible environment
 netdev
 cd ~/ansible-project
 
@@ -3770,13 +3777,38 @@ ansible-inventory --graph
 </details>
 
 <details>
-<summary>2. Install MCP Dependencies</summary>
+<summary>2. Create Ansible MCP Folder</summary>
 
 ```bash
-# Activate your ansible environment
-netdev
+# Create folder (consistent with other MCPs)
+mkdir -p ~/mcp-servers/ansible-mcp
+cd ~/mcp-servers/ansible-mcp
+```
 
-# Install FastMCP
+</details>
+
+<details>
+<summary>3. Create Virtual Environment</summary>
+
+```bash
+# Create venv
+python3 -m venv .venv
+
+# Activate it
+source .venv/bin/activate
+
+# Verify you're in venv
+which python
+# Should show: /home/user/mcp-servers/ansible-mcp/.venv/bin/python
+```
+
+</details>
+
+<details>
+<summary>4. Install FastMCP</summary>
+
+```bash
+# Install FastMCP (inside venv)
 pip install fastmcp
 
 # Verify
@@ -3786,22 +3818,11 @@ pip show fastmcp
 </details>
 
 <details>
-<summary>3. Create MCP Server Directory</summary>
-
-```bash
-# Create directory for MCP servers
-mkdir -p ~/mcp-servers
-cd ~/mcp-servers
-```
-
-</details>
-
-<details>
-<summary>4. Create Ansible MCP Server</summary>
+<summary>5. Create Ansible MCP Server</summary>
 
 ```bash
 # Create the MCP server file
-cat << 'EOF' > ~/mcp-servers/ansible_mcp.py
+cat << 'EOF' > ansible_mcp.py
 #!/usr/bin/env python3
 """Ansible MCP Server - Run playbooks via natural language"""
 
@@ -3865,16 +3886,16 @@ if __name__ == "__main__":
 EOF
 
 # Make executable
-chmod +x ~/mcp-servers/ansible_mcp.py
+chmod +x ansible_mcp.py
 ```
 
 </details>
 
 <details>
-<summary>5. Create Backup Playbook</summary>
+<summary>6. Create Backup Playbook</summary>
 
 ```bash
-# Create backup playbook
+# Create backup playbook in ansible-project
 cat << 'EOF' > ~/ansible-project/playbooks/backup_config.yml
 ---
 - name: Backup Device Configuration
@@ -3908,28 +3929,13 @@ EOF
 </details>
 
 <details>
-<summary>6. Test MCP Server (Optional)</summary>
-
-```bash
-# Quick syntax check
-python -c "import sys; sys.path.insert(0, '.'); exec(open('ansible_mcp.py').read().split('if __name__')[0]); print('OK')"
-
-# Or just verify imports work
-python -c "from mcp.server.fastmcp import FastMCP; print('FastMCP OK')"
-```
-
-</details>
-
-<details>
 <summary>7. Add MCP Server to Claude CLI</summary>
 
 ```bash
-# Get the python path from your venv
-which python
-# Example output: /home/user/ansible-project/ansible-venv/bin/python
-
-# Add to Claude CLI (use YOUR python path)
-claude mcp add ansible-mcp /home/user/ansible-project/ansible-venv/bin/python /home/user/mcp-servers/ansible_mcp.py
+# Add to Claude CLI (use full paths)
+claude mcp add ansible-mcp \
+  /home/user/mcp-servers/ansible-mcp/.venv/bin/python \
+  /home/user/mcp-servers/ansible-mcp/ansible_mcp.py
 
 # Verify connection
 claude mcp list
@@ -3961,28 +3967,32 @@ claude
 <summary>Failed to Connect Error</summary>
 
 ```bash
-# 1. Check python path is correct
-which python
+# 1. Verify paths exist
+ls -la ~/mcp-servers/ansible-mcp/
+ls -la ~/mcp-servers/ansible-mcp/.venv/bin/python
 
-# 2. Remove and re-add
+# 2. Test import manually
+cd ~/mcp-servers/ansible-mcp
+source .venv/bin/activate
+python -c "from mcp.server.fastmcp import FastMCP; print('OK')"
+
+# 3. Remove and re-add
 claude mcp remove ansible-mcp
-claude mcp add ansible-mcp $(which python) /home/user/mcp-servers/ansible_mcp.py
-
-# 3. Check Claude config
-cat ~/.claude.json | grep -A 5 "ansible-mcp"
+claude mcp add ansible-mcp \
+  /home/user/mcp-servers/ansible-mcp/.venv/bin/python \
+  /home/user/mcp-servers/ansible-mcp/ansible_mcp.py
 ```
 
 </details>
 
 <details>
-<summary>Module Not Found Error</summary>
+<summary>Playbook Not Found Error</summary>
 
 ```bash
-# Make sure fastmcp is installed in YOUR active environment
-pip install fastmcp
+# Check playbook directory
+ls -la ~/ansible-project/playbooks/
 
-# Verify
-pip show fastmcp
+# Verify ANSIBLE_DIR in script matches your setup
 ```
 
 </details>
@@ -4083,12 +4093,12 @@ gemini
 
 ## 📝 Changelog
 
-### v20.0 (2025-01-16)
-- ✅ Video 15: Simplified setup (pip instead of UV)
-  - Cleaner command flow
-  - Direct python path for Claude CLI
-  - Added troubleshooting section
-- ✅ Video 16: Updated Gemini CLI preview
+### v21.0 (2025-01-16)
+- ✅ Video 15: Fixed setup to use separate venv (consistent with Video 12, 13)
+  - Created `~/mcp-servers/ansible-mcp/` folder
+  - Uses `python3 -m venv .venv` instead of UV
+  - Clear project structure diagram
+  - Simplified troubleshooting
 
 ---
 

@@ -50,13 +50,7 @@ This series takes you from zero to hero in network automation. Build a complete 
 | 14 | [Ansible Dynamic Inventory](#video-14-ansible-dynamic-inventory-with-netbox) | Ansible, NetBox Plugin | [▶️ YouTube](https://www.youtube.com/watch?v=YwZ6c96R_v0) |
 | 15 | [Ansible MCP Integration](#video-15-ansible-mcp-integration) | Ansible + MCP + Claude | 🔜 Coming Soon |
 | 16 | [Gemini CLI + Remote MCP](#video-16-gemini-cli--remote-mcp) | Gemini CLI, SSE, FREE | 🔜 Coming Soon |
-| 17 | [AWX Installation](#video-17-awx-installation-on-k3s) | K3s, Kubernetes, AWX | 🔜 Coming Soon |
-| 18 | [AWX Git Integration](#video-18-awx-git-integration) | GitHub/GitLab, Projects | 🔜 Coming Soon |
-| 19 | [AWX NetBox Inventory](#video-19-awx-netbox-inventory) | Dynamic Inventory | 🔜 Coming Soon |
-| 20 | [Execution Environments](#video-20-execution-environments) | Custom EE, Docker | 🔜 Coming Soon |
-| 21 | [AWX + Claude Code](#video-21-awx-claude-code-integration) | AI Agent, AWX API | 🔜 Coming Soon |
-| 22 | [AWX MCP Server](#video-22-awx-mcp-server) | Custom MCP, AWX | 🔜 Coming Soon |
-| 23 | [AWX + Gemini CLI](#video-23-awx-gemini-cli) | Free AI, Remote AWX | 🔜 Coming Soon |
+
 
 ---
 

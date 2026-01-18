@@ -48,7 +48,7 @@ This series takes you from zero to hero in network automation. Build a complete 
 | 12 | [NetBox + MCP Hands-On](#video-12-netbox--mcp-hands-on-setup) | Claude CLI, NetBox MCP | [▶️ YouTube](https://www.youtube.com/watch?v=1CImPJ6g0ns) |
 | 13 | [Custom Device MCP](#video-13-custom-mcp-server---network-device-automation) | Netmiko, SSH, FastMCP | [▶️ YouTube](https://www.youtube.com/watch?v=vtDuhAP-KfQ) |
 | 14 | [Ansible Dynamic Inventory](#video-14-ansible-dynamic-inventory-with-netbox) | Ansible, NetBox Plugin | [▶️ YouTube](https://www.youtube.com/watch?v=YwZ6c96R_v0) |
-| 15 | [Ansible MCP Integration](#video-15-ansible-mcp-integration) | Ansible + MCP + Claude | 🔜 Coming Soon |
+| 15 | [Ansible MCP Integration](#video-15-ansible-mcp-integration) | Ansible + MCP + Claude | [▶️ YouTube](https://www.youtube.com/watch?v=rN9GJgPKeCQ) |
 | 16 | [Gemini CLI + Remote MCP](#video-16-gemini-cli--remote-mcp) | Gemini CLI, SSE, FREE | 🔜 Coming Soon |
 
 
@@ -3683,10 +3683,9 @@ ansible-project/
 ---
 
 
-
 ## Video 15: Ansible MCP Integration
 
-🔜 **Coming Soon**
+[▶️ Watch on YouTube](https://www.youtube.com/watch?v=rN9GJgPKeCQ)
 
 ### 📋 Overview
 

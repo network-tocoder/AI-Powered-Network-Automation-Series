@@ -50,6 +50,13 @@ This series takes you from zero to hero in network automation. Build a complete 
 | 14 | [Ansible Dynamic Inventory](#video-14-ansible-dynamic-inventory-with-netbox) | Ansible, NetBox Plugin | [▶️ YouTube](https://www.youtube.com/watch?v=YwZ6c96R_v0) |
 | 15 | [Ansible MCP Integration](#video-15-ansible-mcp-integration) | Ansible + MCP + Claude | [▶️ YouTube](https://www.youtube.com/watch?v=rN9GJgPKeCQ) |
 | 16 | [Gemini CLI + Remote MCP](#video-16-gemini-cli--remote-mcp) | Gemini CLI, SSE, FREE | 🔜 Coming Soon |
+| 17 | [AWX Installation](#video-17-awx-installation-on-k3s) | K3s, Kubernetes, AWX | 🔜 Coming Soon |
+| 18 | [AWX Git Integration](#video-18-awx-git-integration) | GitHub/GitLab, Projects | 🔜 Coming Soon |
+| 19 | [AWX NetBox Inventory](#video-19-awx-netbox-inventory) | Dynamic Inventory | 🔜 Coming Soon |
+| 20 | [Execution Environments](#video-20-execution-environments) | Custom EE, Docker | 🔜 Coming Soon |
+| 21 | [AWX + Claude Code](#video-21-awx-claude-code-integration) | AI Agent, AWX API | 🔜 Coming Soon |
+| 22 | [AWX MCP Server](#video-22-awx-mcp-server) | Custom MCP, AWX | 🔜 Coming Soon |
+| 23 | [AWX + Gemini CLI](#video-23-awx-gemini-cli) | Free AI, Remote AWX | 🔜 Coming Soon |
 
 
 ---
@@ -4020,6 +4027,7 @@ ls -la ~/ansible-project/playbooks/
 ---
 
 
+
 ## Video 16: Gemini CLI + Remote MCP
 
 🔜 **Coming Soon**
@@ -4032,7 +4040,8 @@ Use Google's FREE Gemini CLI with remote MCP servers. Access your network automa
 
 - Install Gemini CLI (completely FREE)
 - Configure MCP for remote access (SSE transport)
-- Access NetBox, Ansible, Device tools from any machine
+- Build unified MCP server with multiple tools
+- Access NetBox, Ansible tools from any machine
 
 ### 🆚 Why Gemini CLI?
 
@@ -4046,38 +4055,163 @@ Use Google's FREE Gemini CLI with remote MCP servers. Access your network automa
 ### 🏗️ Architecture
 
 ```
-┌─────────────────┐                    ┌─────────────────────────────┐
-│   Your Laptop   │                    │   Ansible Node (.119)       │
-│   (Anywhere)    │                    │                             │
-│                 │     HTTP/SSE       │   ┌───────────────────┐     │
-│   Gemini CLI    │◄──────────────────►│   │  MCP Server (SSE) │     │
-│                 │     Port 8080      │   │  - NetBox tools   │     │
-│                 │                    │   │  - Ansible tools  │     │
-└─────────────────┘                    │   │  - Device tools   │     │
-                                       │   └─────────┬─────────┘     │
-                                       │             ▼               │
-                                       │      Network Devices        │
-                                       └─────────────────────────────┘
+┌─────────────────────────────────────────────────────────────────────────────┐
+│                     GEMINI CLI + REMOTE MCP ARCHITECTURE                     │
+└─────────────────────────────────────────────────────────────────────────────┘
+
+┌─────────────────────────────┐              ┌─────────────────────────────────┐
+│         YOUR LAPTOP         │              │      ANSIBLE NODE (.119)        │
+│        (Anywhere)           │              │                                 │
+│                             │              │  ┌───────────────────────────┐  │
+│  ┌───────────────────────┐  │              │  │   Unified MCP Server      │  │
+│  │      Gemini CLI       │  │   HTTP/SSE   │  │   (Port 8080)             │  │
+│  │                       │  │   ════════>  │  │                           │  │
+│  │  "Backup all routers" │  │  Port 8080   │  │  ┌─────────────────────┐  │  │
+│  └───────────────────────┘  │              │  │  │   NetBox Tools      │  │  │
+│                             │              │  │  │   - list_devices    │  │  │
+│   Just a Google account!    │              │  │  │   - get_device      │  │  │
+│   No subscription needed    │              │  │  └─────────────────────┘  │  │
+│                             │              │  │                           │  │
+└─────────────────────────────┘              │  │  ┌─────────────────────┐  │  │
+                                             │  │  │   Ansible Tools     │  │  │
+                                             │  │  │   - list_playbooks  │  │  │
+                                             │  │  │   - run_playbook    │  │  │
+                                             │  │  │   - get_inventory   │  │  │
+                                             │  │  └─────────────────────┘  │  │
+                                             │  └─────────────┬─────────────┘  │
+                                             │                │                │
+                                             │                ▼                │
+                                             │  ┌───────────────────────────┐  │
+                                             │  │     Network Devices       │  │
+                                             │  │   vIOS-R1, R2, R3         │  │
+                                             │  └───────────────────────────┘  │
+                                             └─────────────────────────────────┘
 ```
 
 ### 🔄 Local vs Remote MCP
 
 ```
-LOCAL (stdio) - Videos 12-15:
-┌──────────┐     ┌──────────┐
-│ Claude   │────►│ MCP      │  Same machine only
-└──────────┘     └──────────┘
+┌─────────────────────────────────────────────────────────────────────────────┐
+│                        LOCAL vs REMOTE MCP COMPARISON                        │
+└─────────────────────────────────────────────────────────────────────────────┘
 
-REMOTE (SSE) - Video 16:
-┌──────────┐                 ┌──────────┐
-│ Gemini   │─── Internet ───►│ MCP      │  Access from anywhere!
-└──────────┘                 └──────────┘
+VIDEOS 12-15: LOCAL MCP (stdio transport)
+┌────────────────────────────────────────────┐
+│            Same Machine Only               │
+│                                            │
+│  ┌──────────┐  stdio   ┌──────────┐       │
+│  │ Claude   │ ───────► │   MCP    │       │
+│  │   CLI    │ ◄─────── │  Server  │       │
+│  └──────────┘          └──────────┘       │
+│                                            │
+│  Fast, but limited to local machine        │
+└────────────────────────────────────────────┘
+
+VIDEO 16: REMOTE MCP (SSE transport)
+┌────────────────────────────────────────────────────────────────┐
+│                    Access from ANYWHERE                        │
+│                                                                │
+│  ┌──────────┐   HTTP/SSE    ┌──────────┐                      │
+│  │ Gemini   │ ════════════► │   MCP    │                      │
+│  │   CLI    │   Internet    │  Server  │                      │
+│  │ (Laptop) │ ◄════════════ │ (Server) │                      │
+│  └──────────┘               └──────────┘                      │
+│                                                                │
+│  Coffee shop, home, office - control your network anywhere!   │
+└────────────────────────────────────────────────────────────────┘
+```
+
+### 🔧 Single Agent + Multi-Tool Concept
+
+```
+┌─────────────────────────────────────────────────────────────────────────────┐
+│                        SINGLE AGENT + MULTI-TOOL                             │
+│                        (What we're building)                                 │
+└─────────────────────────────────────────────────────────────────────────────┘
+
+                              ┌─────────────────┐
+                              │    Gemini CLI   │
+                              │   (ONE Agent)   │
+                              └────────┬────────┘
+                                       │
+                                       ▼
+                              ┌─────────────────┐
+                              │   MCP Server    │
+                              │  (Multi-Tool)   │
+                              └────────┬────────┘
+                                       │
+              ┌────────────────────────┼────────────────────────┐
+              │                        │                        │
+              ▼                        ▼                        ▼
+     ┌─────────────────┐     ┌─────────────────┐     ┌─────────────────┐
+     │  NetBox Tools   │     │  Ansible Tools  │     │  Device Tools   │
+     │                 │     │                 │     │                 │
+     │ - list_devices  │     │ - list_playbooks│     │ - run_command   │
+     │ - get_device    │     │ - run_playbook  │     │ - get_config    │
+     │                 │     │ - get_inventory │     │                 │
+     └─────────────────┘     └─────────────────┘     └─────────────────┘
+              │                        │                        │
+              │                        │                        │
+              ▼                        ▼                        ▼
+         NetBox API            Ansible CLI              SSH/Netmiko
+
+NOTE: This is NOT multi-agent. It's ONE AI with MULTIPLE tools.
+The AI decides WHICH tool to use based on your natural language query.
+```
+
+### 🏠 Home LAB Setup
+
+```
+┌─────────────────────────────────────────────────────────────────────────────┐
+│                         HOME LAB - VIDEO 16 SETUP                            │
+└─────────────────────────────────────────────────────────────────────────────┘
+
+                    ┌─────────────────────────────────────┐
+                    │        INTERNET / VPN               │
+                    └──────────────────┬──────────────────┘
+                                       │
+        ┌──────────────────────────────┼──────────────────────────────┐
+        │                              │                              │
+        ▼                              ▼                              │
+┌──────────────┐               ┌──────────────┐                       │
+│  Your Laptop │               │ Home Router  │                       │
+│  (Anywhere)  │               │ 192.168.1.1  │                       │
+│              │               │              │                       │
+│ Gemini CLI   │               │ Port Forward │                       │
+│              │               │ 8080 → .119  │                       │
+└──────────────┘               └──────┬───────┘                       │
+                                      │                               │
+                    ┌─────────────────┼─────────────────┐             │
+                    │                 │                 │             │
+                    ▼                 ▼                 ▼             │
+           ┌──────────────┐  ┌──────────────┐  ┌──────────────┐      │
+           │ Ansible Node │  │    NetBox    │  │    EVE-NG    │      │
+           │ 192.168.1.119│  │ 192.168.1.120│  │ 192.168.1.100│      │
+           │              │  │              │  │              │      │
+           │ Unified MCP  │  │ Device Data  │  │ vIOS-R1 .201 │      │
+           │ Server :8080 │  │ API :8000    │  │ vIOS-R2 .202 │      │
+           │              │  │              │  │ vIOS-R3 .203 │      │
+           └──────────────┘  └──────────────┘  └──────────────┘      │
+                                                                      │
+└─────────────────────────────────────────────────────────────────────┘
+```
+
+### 📁 Project Structure
+
+```
+~/mcp-servers/
+├── netbox-mcp-server/       # Video 12 (Local)
+├── device-mcp/              # Video 13 (Local)
+├── ansible-mcp/             # Video 15 (Local)
+└── unified-mcp-sse/         # Video 16 (Remote!) ← NEW
+    ├── .venv/
+    └── unified_mcp_sse.py   # All tools in one server
 ```
 
 ### 💻 Commands
 
 <details>
-<summary>1. Install Gemini CLI</summary>
+<summary>1. Install Gemini CLI (on Laptop)</summary>
 
 ```bash
 # Option 1: npm
@@ -4093,14 +4227,14 @@ gemini --version
 </details>
 
 <details>
-<summary>2. Authenticate (FREE)</summary>
+<summary>2. Authenticate with Google (FREE)</summary>
 
 ```bash
 # Login with Google account
 gemini auth login
 
 # This opens browser - just sign in with Google
-# No subscription needed!
+# No subscription needed! Completely FREE!
 
 # Verify
 gemini auth status
@@ -4109,9 +4243,10 @@ gemini auth status
 </details>
 
 <details>
-<summary>3. Create SSE MCP Server (on Ansible Node)</summary>
+<summary>3. Create Unified MCP Server (on Ansible Node)</summary>
 
 ```bash
+# On Ansible Node (192.168.1.119)
 cd ~/mcp-servers
 mkdir -p unified-mcp-sse
 cd unified-mcp-sse
@@ -4126,7 +4261,7 @@ pip install fastmcp requests netmiko
 # Create unified server
 cat << 'EOF' > unified_mcp_sse.py
 #!/usr/bin/env python3
-"""Unified MCP Server with SSE Transport"""
+"""Unified MCP Server with SSE Transport for Remote Access"""
 
 from mcp.server.fastmcp import FastMCP
 import subprocess
@@ -4135,48 +4270,72 @@ from pathlib import Path
 
 mcp = FastMCP("Network Automation MCP")
 
+# Configuration
 ANSIBLE_DIR = Path.home() / "ansible-project"
 ANSIBLE_BIN = Path.home() / "ansible-project/ansible-venv/bin"
 NETBOX_URL = "http://192.168.1.120:8000"
-NETBOX_TOKEN = "your-token-here"
+NETBOX_TOKEN = "your-netbox-token-here"
 
-# === NetBox Tools ===
+# === NetBox Tools (Direct API) ===
 @mcp.tool()
 def netbox_list_devices() -> str:
-    """List all devices from NetBox"""
+    """List devices with IPs from NetBox (direct API - fast query)"""
     headers = {"Authorization": f"Token {NETBOX_TOKEN}"}
     r = requests.get(f"{NETBOX_URL}/api/dcim/devices/", headers=headers)
     devices = r.json().get('results', [])
-    return "\n".join([f"- {d['name']}" for d in devices])
+    result = "Devices in NetBox:\n"
+    for d in devices:
+        ip = d.get('primary_ip4', {})
+        ip_addr = ip.get('address', 'No IP') if ip else 'No IP'
+        result += f"  - {d['name']} ({ip_addr})\n"
+    return result
 
-# === Ansible Tools ===
+# === Ansible Tools (via Ansible CLI) ===
 @mcp.tool()
 def ansible_list_playbooks() -> str:
-    """List available playbooks"""
+    """List all available Ansible playbooks"""
     playbooks = list((ANSIBLE_DIR / "playbooks").glob("*.yml"))
-    return "\n".join([f"- {p.name}" for p in playbooks])
+    if not playbooks:
+        return "No playbooks found"
+    result = "Available playbooks:\n"
+    for p in playbooks:
+        result += f"  - {p.name}\n"
+    return result
 
 @mcp.tool()
 def ansible_run_playbook(playbook: str, limit: str = None) -> str:
-    """Run an Ansible playbook"""
-    cmd = [str(ANSIBLE_BIN / "ansible-playbook"), 
-           str(ANSIBLE_DIR / "playbooks" / playbook)]
+    """Run an Ansible playbook with optional host limit"""
+    playbook_path = ANSIBLE_DIR / "playbooks" / playbook
+    if not playbook_path.exists():
+        return f"Error: Playbook '{playbook}' not found"
+    
+    # IMPORTANT: Use absolute path to ansible-playbook
+    cmd = [str(ANSIBLE_BIN / "ansible-playbook"), str(playbook_path)]
     if limit:
         cmd.extend(["--limit", limit])
-    result = subprocess.run(cmd, cwd=ANSIBLE_DIR, 
-                           capture_output=True, text=True, timeout=300)
-    return result.stdout + result.stderr
+    
+    try:
+        result = subprocess.run(
+            cmd, cwd=ANSIBLE_DIR,
+            capture_output=True, text=True, timeout=300
+        )
+        return result.stdout + result.stderr
+    except Exception as e:
+        return f"Error: {str(e)}"
 
 @mcp.tool()
 def ansible_get_inventory() -> str:
-    """Get inventory from NetBox"""
+    """Get Ansible inventory groups and hosts (via NetBox plugin)"""
+    # IMPORTANT: Use absolute path to ansible-inventory
     result = subprocess.run(
         [str(ANSIBLE_BIN / "ansible-inventory"), "--graph"],
-        cwd=ANSIBLE_DIR, capture_output=True, text=True)
-    return result.stdout
+        cwd=ANSIBLE_DIR, capture_output=True, text=True
+    )
+    return f"Ansible Inventory:\n{result.stdout}"
 
 if __name__ == "__main__":
     # Run with SSE transport for remote access
+    print("Starting MCP Server on http://0.0.0.0:8080")
     mcp.run(transport="sse", host="0.0.0.0", port=8080)
 EOF
 
@@ -4193,14 +4352,17 @@ chmod +x unified_mcp_sse.py
 cd ~/mcp-servers/unified-mcp-sse
 source .venv/bin/activate
 
-# Start server (foreground)
+# Start server (foreground - see logs)
 python unified_mcp_sse.py
 
-# Or background
+# Or run in background
 nohup python unified_mcp_sse.py > mcp.log 2>&1 &
 
-# Verify
+# Verify server is running
 curl http://localhost:8080/health
+
+# Check logs if needed
+tail -f mcp.log
 ```
 
 </details>
@@ -4214,8 +4376,10 @@ gemini mcp add network-automation \
   --transport sse \
   --url http://192.168.1.119:8080
 
-# Verify
+# Verify connection
 gemini mcp list
+
+# Expected: network-automation: ... - Connected
 ```
 
 </details>
@@ -4224,53 +4388,109 @@ gemini mcp list
 <summary>6. Test Remote Access</summary>
 
 ```bash
-# Start Gemini
+# Start Gemini CLI
 gemini
 
-# Try queries (from anywhere!)
+# Try these queries (from anywhere!):
+
+# NetBox queries (direct API)
 > "List all devices in NetBox"
-> "Show available Ansible playbooks"
+> "What devices do we have?"
+
+# Ansible queries
+> "Show available playbooks"
+> "What's the current inventory?"
+
+# Run automation
 > "Backup all router configs"
-> "Run NTP config on vIOS-R1"
+> "Deploy NTP on vIOS-R1"
+> "Run backup_config playbook on all devices"
 ```
 
 </details>
 
-### 🔐 Security Tips
+### 🔍 Tool Selection: How AI Decides
+
+When you ask a question, the AI reads tool descriptions and picks the best match:
+
+| Your Query | Tool Called | Why |
+|------------|-------------|-----|
+| "List devices in NetBox" | `netbox_list_devices` | "NetBox" in query |
+| "Show Ansible inventory" | `ansible_get_inventory` | "Ansible" context |
+| "Run backup playbook" | `ansible_run_playbook` | "playbook" keyword |
+| "What playbooks exist?" | `ansible_list_playbooks` | Lists playbooks |
+
+> **Note:** Both `netbox_list_devices` and `ansible_get_inventory` get data from NetBox, but via different paths. Direct API is faster for quick lookups. Ansible inventory shows groupings.
+
+### 🔐 Security Recommendations
 
 | Risk | Mitigation |
 |------|------------|
-| Open port | Use VPN or SSH tunnel |
-| No auth | Add API key to MCP server |
-| HTTP | Use nginx + SSL for HTTPS |
+| Open port 8080 | Use VPN or SSH tunnel |
+| No authentication | Add API key validation to MCP server |
+| HTTP unencrypted | Use nginx reverse proxy with SSL |
+| Credentials in code | Use environment variables |
+
+<details>
+<summary>SSH Tunnel Option (Secure)</summary>
+
+```bash
+# On your laptop - create SSH tunnel
+ssh -L 8080:localhost:8080 user@192.168.1.119
+
+# Then configure Gemini to use localhost
+gemini mcp add network-automation \
+  --transport sse \
+  --url http://localhost:8080
+
+# Traffic is now encrypted through SSH!
+```
+
+</details>
 
 ### 📦 Example Queries
 
 ```bash
-# From Gemini CLI (works from anywhere!)
+# Quick device lookup
 "List all network devices"
-"Show me the inventory"
+"What's in NetBox?"
+
+# Inventory with groups
+"Show me the Ansible inventory"
+"What groups do we have?"
+
+# Run automation
 "Backup configs for all routers"
-"Run NTP configuration on R1"
+"Deploy NTP on vIOS-R1"
+"Run show_version playbook on device_roles_router"
+
+# Combined workflows
+"First show me all devices, then backup their configs"
 ```
 
 ---
 
-## 🚀 AWX Series (Coming Soon)
+## 🚀 AWX Series - Coming Next!
 
-The next phase of our Network Automation journey - Enterprise-grade automation with Ansible AWX!
+The next phase of our Network Automation journey - Enterprise-grade automation with Ansible AWX on Kubernetes!
 
 ### 📺 AWX Video Index
 
 | # | Video | Topic | Status |
 |---|-------|-------|--------|
 | 17 | [AWX Installation](#video-17-awx-installation-on-k3s) | K3s, Kubernetes, AWX | 🔜 Coming Soon |
-| 18 | [AWX + Git Integration](#video-18-awx-git-integration) | GitLab/GitHub, Projects | 🔜 Coming Soon |
-| 19 | [AWX + NetBox Inventory](#video-19-awx-netbox-inventory) | Dynamic Inventory, Source of Truth | 🔜 Coming Soon |
-| 20 | [Execution Environments](#video-20-execution-environments) | Custom EE, Docker, Registry | 🔜 Coming Soon |
-| 21 | [AWX + Claude Code](#video-21-awx-claude-code-integration) | AI Agent, Job Templates | 🔜 Coming Soon |
-| 22 | [AWX MCP Server](#video-22-awx-mcp-server) | Custom MCP, AWX API | 🔜 Coming Soon |
-| 23 | [AWX + Gemini CLI](#video-23-awx-gemini-cli) | Free AI, Remote Access | 🔜 Coming Soon |
+| 18 | [AWX Git Integration](#video-18-awx-git-integration) | GitHub/GitLab, Projects | 🔜 Coming Soon |
+| 19 | [AWX NetBox Inventory](#video-19-awx-netbox-inventory) | Dynamic Inventory | 🔜 Coming Soon |
+| 20 | [Execution Environments](#video-20-execution-environments) | Custom EE, Docker | 🔜 Coming Soon |
+| 21 | [AWX + Claude Code](#video-21-awx-claude-code-integration) | AI Agent, AWX API | 🔜 Coming Soon |
+| 22 | [AWX MCP Server](#video-22-awx-mcp-server) | Custom MCP, AWX | 🔜 Coming Soon |
+| 23 | [AWX + Gemini CLI](#video-23-awx-gemini-cli) | Free AI, Remote AWX | 🔜 Coming Soon |
+| 18 | [AWX Git Integration](#video-18-awx-git-integration) | GitHub/GitLab, Projects | 🔜 Coming Soon |
+| 19 | [AWX NetBox Inventory](#video-19-awx-netbox-inventory) | Dynamic Inventory | 🔜 Coming Soon |
+| 20 | [Execution Environments](#video-20-execution-environments) | Custom EE, Docker | 🔜 Coming Soon |
+| 21 | [AWX + Claude Code](#video-21-awx-claude-code-integration) | AI Agent + AWX API | 🔜 Coming Soon |
+| 22 | [AWX MCP Server](#video-22-awx-mcp-server) | Custom MCP for AWX | 🔜 Coming Soon |
+| 23 | [AWX + Gemini CLI](#video-23-awx-gemini-cli) | Free Remote AWX | 🔜 Coming Soon |
 
 ---
 
@@ -4280,264 +4500,193 @@ The next phase of our Network Automation journey - Enterprise-grade automation w
 
 ### 📋 Overview
 
-Deploy Ansible AWX on lightweight K3s Kubernetes in your EVE-NG home lab.
+Deploy Ansible AWX on lightweight K3s Kubernetes in your EVE-NG home lab. Enterprise-grade automation with Web UI, RBAC, and job scheduling.
 
 ### 🎯 What You'll Learn
 
 - Install K3s (lightweight Kubernetes)
-- Deploy AWX Operator
+- Deploy AWX Operator via Helm
 - Configure AWX instance
 - Access AWX Web UI
+- Initial admin setup
+
+### ❓ Why AWX?
+
+| Feature | Ansible CLI | AWX |
+|---------|-------------|-----|
+| **Interface** | Terminal only | ✅ Web UI |
+| **Scheduling** | Cron (manual) | ✅ Built-in scheduler |
+| **RBAC** | None | ✅ Role-based access |
+| **Audit** | Manual logs | ✅ Job history |
+| **Credentials** | Files/Vault | ✅ Secure credential store |
+| **Scaling** | Single node | ✅ Distributed execution |
 
 ### 🏗️ Architecture
 
 ```
-┌─────────────────────────────────────────────────────────────┐
-│                    EVE-NG Home Lab                          │
-│                                                             │
-│  ┌─────────────────────────────────────────────────────┐   │
-│  │              K3s Kubernetes Cluster                  │   │
-│  │                                                      │   │
-│  │   ┌──────────────┐  ┌──────────────┐               │   │
-│  │   │  AWX Web UI  │  │  AWX Task    │               │   │
-│  │   │  (Pod)       │  │  (Pod)       │               │   │
-│  │   └──────────────┘  └──────────────┘               │   │
-│  │   ┌──────────────┐  ┌──────────────┐               │   │
-│  │   │  PostgreSQL  │  │    Redis     │               │   │
-│  │   │  (Pod)       │  │  (Pod)       │               │   │
-│  │   └──────────────┘  └──────────────┘               │   │
-│  │                                                      │   │
-│  └─────────────────────────────────────────────────────┘   │
-│                           │                                 │
-│                           ▼                                 │
-│              ┌─────────────────────────┐                   │
-│              │    Network Devices      │                   │
-│              │    R1, R2, R3           │                   │
-│              └─────────────────────────┘                   │
-└─────────────────────────────────────────────────────────────┘
+┌─────────────────────────────────────────────────────────────────────────────┐
+│                       AWX ON K3s KUBERNETES                                  │
+└─────────────────────────────────────────────────────────────────────────────┘
+
+┌─────────────────────────────────────────────────────────────────────────────┐
+│                         K3s Kubernetes Cluster                               │
+│                         (Single Node - Home Lab)                             │
+│                                                                              │
+│   ┌─────────────────────────────────────────────────────────────────────┐   │
+│   │                         AWX Namespace                                │   │
+│   │                                                                      │   │
+│   │   ┌─────────────┐   ┌─────────────┐   ┌─────────────┐              │   │
+│   │   │   AWX Web   │   │  AWX Task   │   │  AWX EE     │              │   │
+│   │   │   (Pod)     │   │   (Pod)     │   │   (Pod)     │              │   │
+│   │   │             │   │             │   │             │              │   │
+│   │   │ Port 8052   │   │ Job Runner  │   │ Execution   │              │   │
+│   │   │ Web UI      │   │             │   │ Environment │              │   │
+│   │   └─────────────┘   └─────────────┘   └─────────────┘              │   │
+│   │          │                 │                 │                      │   │
+│   │          └─────────────────┼─────────────────┘                      │   │
+│   │                            │                                        │   │
+│   │   ┌─────────────┐   ┌─────────────┐                                │   │
+│   │   │ PostgreSQL  │   │    Redis    │                                │   │
+│   │   │   (Pod)     │   │   (Pod)     │                                │   │
+│   │   │  Database   │   │   Cache     │                                │   │
+│   │   └─────────────┘   └─────────────┘                                │   │
+│   │                                                                      │   │
+│   └──────────────────────────────────────────────────────────────────────┘   │
+│                                                                              │
+└──────────────────────────────────────────────────────────────────────────────┘
+                                    │
+                                    │ SSH/API
+                                    ▼
+                    ┌───────────────────────────────┐
+                    │       Network Devices         │
+                    │       vIOS-R1, R2, R3         │
+                    └───────────────────────────────┘
+```
+
+### 🏠 Home LAB Setup for AWX
+
+```
+┌─────────────────────────────────────────────────────────────────────────────┐
+│                         HOME LAB - VIDEO 17 SETUP                            │
+└─────────────────────────────────────────────────────────────────────────────┘
+
+                              ┌──────────────────┐
+                              │   Home Network   │
+                              │  192.168.1.0/24  │
+                              └────────┬─────────┘
+                                       │
+       ┌───────────────────────────────┼───────────────────────────────┐
+       │                               │                               │
+       ▼                               ▼                               ▼
+┌──────────────┐              ┌──────────────┐              ┌──────────────┐
+│  AWX Server  │              │    NetBox    │              │    EVE-NG    │
+│192.168.1.121 │              │192.168.1.120 │              │192.168.1.100 │
+│   (NEW!)     │              │              │              │              │
+│              │              │              │              │              │
+│ - K3s        │              │ - Docker     │              │ - vIOS-R1    │
+│ - AWX        │              │ - API        │              │ - vIOS-R2    │
+│ - Port 8052  │              │              │              │ - vIOS-R3    │
+│              │              │              │              │              │
+│ 4 CPU        │              │              │              │              │
+│ 8GB RAM      │              │              │              │              │
+│ 50GB Disk    │              │              │              │              │
+└──────────────┘              └──────────────┘              └──────────────┘
 ```
 
 ### 💻 Commands (Preview)
 
+<details>
+<summary>1. Install K3s</summary>
+
 ```bash
-# Install K3s
+# Install K3s (lightweight Kubernetes)
 curl -sfL https://get.k3s.io | sh -
 
-# Install AWX Operator
-kubectl apply -f awx-operator.yaml
+# Verify
+sudo kubectl get nodes
 
-# Deploy AWX instance
+# Set permissions for regular user
+mkdir -p ~/.kube
+sudo cp /etc/rancher/k3s/k3s.yaml ~/.kube/config
+sudo chown $USER:$USER ~/.kube/config
+
+# Verify
+kubectl get nodes
+```
+
+</details>
+
+<details>
+<summary>2. Install AWX Operator</summary>
+
+```bash
+# Add AWX Helm repo
+helm repo add awx-operator https://ansible-community.github.io/awx-operator-helm/
+helm repo update
+
+# Create namespace
+kubectl create namespace awx
+
+# Install AWX Operator
+helm install awx-operator awx-operator/awx-operator -n awx
+
+# Verify operator is running
+kubectl get pods -n awx
+```
+
+</details>
+
+<details>
+<summary>3. Deploy AWX Instance</summary>
+
+```bash
+# Create AWX instance manifest
+cat << 'EOF' > awx-instance.yaml
+apiVersion: awx.ansible.com/v1beta1
+kind: AWX
+metadata:
+  name: awx
+  namespace: awx
+spec:
+  service_type: NodePort
+  nodeport_port: 8052
+EOF
+
+# Apply
 kubectl apply -f awx-instance.yaml
 
+# Watch deployment (takes 5-10 minutes)
+kubectl get pods -n awx -w
+```
+
+</details>
+
+<details>
+<summary>4. Get Admin Password</summary>
+
+```bash
 # Get admin password
-kubectl get secret awx-admin-password -o jsonpath="{.data.password}" | base64 -d
+kubectl get secret awx-admin-password -n awx -o jsonpath="{.data.password}" | base64 -d
+
+# Access Web UI
+# http://192.168.1.121:8052
+# Username: admin
+# Password: (from above command)
 ```
+
+</details>
+
+### 📋 AWX Server Requirements
+
+| Resource | Minimum | Recommended |
+|----------|---------|-------------|
+| CPU | 2 cores | 4 cores |
+| RAM | 4 GB | 8 GB |
+| Disk | 20 GB | 50 GB |
+| OS | Ubuntu 22.04 | Ubuntu 22.04 |
 
 ---
 
-## Video 18: AWX Git Integration
-
-🔜 **Coming Soon**
-
-### 📋 Overview
-
-Connect AWX to GitHub/GitLab for version-controlled playbooks and projects.
-
-### 🎯 What You'll Learn
-
-- Create AWX Project from Git repo
-- Configure credentials (SSH/Token)
-- Sync playbooks automatically
-- Job Templates from Git
-
-### 🏗️ Architecture
-
-```
-┌──────────────┐         ┌──────────────┐         ┌──────────────┐
-│   GitHub/    │◄───────►│     AWX      │────────►│   Network    │
-│   GitLab     │  Sync   │   Project    │  Run    │   Devices    │
-│              │         │              │         │              │
-│ - playbooks/ │         │ Job Template │         │ R1, R2, R3   │
-│ - inventory/ │         │              │         │              │
-└──────────────┘         └──────────────┘         └──────────────┘
-```
-
----
-
-## Video 19: AWX NetBox Inventory
-
-🔜 **Coming Soon**
-
-### 📋 Overview
-
-Use NetBox as dynamic inventory source for AWX - true Source of Truth integration.
-
-### 🎯 What You'll Learn
-
-- Configure NetBox inventory source in AWX
-- Auto-sync devices from NetBox
-- Group devices by site/role/platform
-- Smart Inventories
-
-### 🏗️ Architecture
-
-```
-┌──────────────┐         ┌──────────────┐         ┌──────────────┐
-│    NetBox    │◄───────►│     AWX      │────────►│   Network    │
-│              │  API    │  Inventory   │  SSH    │   Devices    │
-│ - Devices    │         │              │         │              │
-│ - IPs        │         │ - Groups     │         │ R1, R2, R3   │
-│ - Sites      │         │ - Hosts      │         │              │
-└──────────────┘         └──────────────┘         └──────────────┘
-```
-
----
-
-## Video 20: Execution Environments
-
-🔜 **Coming Soon**
-
-### 📋 Overview
-
-Build custom Execution Environments with all dependencies, push to registry.
-
-### 🎯 What You'll Learn
-
-- What are Execution Environments (EE)
-- Build custom EE with ansible-builder
-- Include network collections (netbox, cisco, fortinet)
-- Push to GitHub Container Registry
-- Use custom EE in AWX
-
-### 🏗️ Architecture
-
-```
-┌─────────────────────────────────────────────────────────────┐
-│                  Execution Environment                       │
-│                                                              │
-│  ┌────────────────────────────────────────────────────────┐ │
-│  │  Base Image: ansible-runner                            │ │
-│  │                                                        │ │
-│  │  Collections:        Python Packages:                  │ │
-│  │  - netbox.netbox     - pynetbox                       │ │
-│  │  - cisco.ios         - netmiko                        │ │
-│  │  - fortinet.fortios  - paramiko                       │ │
-│  │  - ansible.netcommon - pyats                          │ │
-│  └────────────────────────────────────────────────────────┘ │
-└─────────────────────────────────────────────────────────────┘
-                              │
-                              ▼
-                    Push to ghcr.io/username/network-ee
-```
-
----
-
-## Video 21: AWX + Claude Code Integration
-
-🔜 **Coming Soon**
-
-### 📋 Overview
-
-Connect Claude Code to AWX for AI-powered job execution.
-
-### 🎯 What You'll Learn
-
-- AWX API basics
-- Trigger Job Templates via API
-- Claude Code as orchestrator
-- Natural language to AWX jobs
-
-### 🏗️ Architecture
-
-```
-                    "Backup all routers"
-                           │
-                           ▼
-                  ┌─────────────────┐
-                  │   Claude Code   │
-                  └────────┬────────┘
-                           │ API Call
-                           ▼
-                  ┌─────────────────┐
-                  │      AWX        │
-                  │  Job Template   │
-                  └────────┬────────┘
-                           │
-              ┌────────────┼────────────┐
-              ▼            ▼            ▼
-         ┌────────┐  ┌────────┐  ┌────────┐
-         │  R1    │  │  R2    │  │  R3    │
-         └────────┘  └────────┘  └────────┘
-```
-
----
-
-## Video 22: AWX MCP Server
-
-🔜 **Coming Soon**
-
-### 📋 Overview
-
-Build custom MCP server to control AWX via natural language.
-
-### 🎯 What You'll Learn
-
-- AWX API authentication
-- MCP tools for AWX (list jobs, launch job, get status)
-- Integration with Claude CLI
-
-### 📦 MCP Tools (Preview)
-
-```python
-@mcp.tool()
-def awx_list_templates() -> str:
-    """List all AWX job templates"""
-
-@mcp.tool()
-def awx_launch_job(template_name: str, limit: str = None) -> str:
-    """Launch an AWX job template"""
-
-@mcp.tool()
-def awx_job_status(job_id: int) -> str:
-    """Get status of AWX job"""
-```
-
----
-
-## Video 23: AWX + Gemini CLI
-
-🔜 **Coming Soon**
-
-### 📋 Overview
-
-Control AWX from anywhere using FREE Gemini CLI with remote MCP.
-
-### 🎯 What You'll Learn
-
-- Remote AWX MCP Server (SSE)
-- Gemini CLI configuration
-- Enterprise automation from laptop/phone
-
-### 🏗️ Architecture
-
-```
-┌─────────────────┐                    ┌─────────────────────────────┐
-│   Your Laptop   │                    │      Home Lab Server        │
-│   (Anywhere)    │                    │                             │
-│                 │     HTTP/SSE       │   ┌───────────────────┐     │
-│   Gemini CLI    │◄──────────────────►│   │  AWX MCP Server   │     │
-│                 │                    │   └─────────┬─────────┘     │
-│  "Launch backup │                    │             │               │
-│   job on AWX"   │                    │             ▼               │
-│                 │                    │   ┌───────────────────┐     │
-└─────────────────┘                    │   │       AWX         │     │
-                                       │   └─────────┬─────────┘     │
-                                       │             ▼               │
-                                       │      Network Devices        │
-                                       └─────────────────────────────┘
-```
-
----
 
 ## 📚 Additional Resources
 
@@ -4549,25 +4698,29 @@ Control AWX from anywhere using FREE Gemini CLI with remote MCP.
 | AWX | [github.com/ansible/awx](https://github.com/ansible/awx) |
 | K3s | [k3s.io](https://k3s.io/) |
 | MCP Protocol | [modelcontextprotocol.io](https://modelcontextprotocol.io/) |
+| FastMCP | [github.com/jlowin/fastmcp](https://github.com/jlowin/fastmcp) |
 | Gemini CLI | [ai.google.dev](https://ai.google.dev/) |
 
 ---
 
 ## 📝 Changelog
 
+### v24.0 (2025-01-17)
+- ✅ Video 16: Major update
+  - Expanded architecture diagrams
+  - Added Single Agent + Multi-Tool explanation
+  - Added Home Lab setup diagram
+  - Improved unified_mcp_sse.py with better descriptions
+  - Added Tool Selection explanation
+  - Added SSH tunnel security option
+- ✅ Video 17: Added comprehensive preview
+  - AWX on K3s architecture
+  - Server requirements
+  - Installation commands preview
+
 ### v23.0 (2025-01-16)
 - ✅ Video 16: Complete Gemini CLI + Remote MCP documentation
-  - SSE transport setup
-  - Unified MCP server code
-  - Security recommendations
 - ✅ Added AWX Series roadmap (Videos 17-23)
-  - AWX Installation on K3s
-  - Git Integration
-  - NetBox Inventory
-  - Execution Environments
-  - Claude Code + AWX
-  - AWX MCP Server
-  - Gemini CLI + AWX
 
 ### v22.0 (2025-01-16)
 - ✅ Video 15: Fixed ansible_mcp.py absolute paths

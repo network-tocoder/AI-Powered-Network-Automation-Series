@@ -5,7 +5,7 @@
 
 <p align="center">
   <img src="assets/Series Thumpnail.jpg" alt="Network Coder Banner" width="800">
-</p>
+</p>a
 
 <p align="center">
   <img src="https://img.shields.io/badge/Network-007ACC?style=for-the-badge" alt="Network">
@@ -51,6 +51,12 @@ This series takes you from zero to hero in network automation. Build a complete 
 | 15 | [Ansible MCP Integration](#video-15-ansible-mcp-integration) | Ansible + MCP + Claude | [▶️ YouTube](https://www.youtube.com/watch?v=rN9GJgPKeCQ) |
 | 16 | [Gemini CLI + Remote MCP](#video-16-gemini-cli--remote-mcp) | Gemini CLI, SSE, FREE | 🔜 Coming Soon |
 | 17 | [AWX Installation](#video-17-awx-installation-on-k3s) | K3s, Kubernetes, AWX | 🔜 Coming Soon |
+| 18 | [AWX Git Integration](#video-18-awx-git-integration) | GitHub/GitLab, Projects | 🔜 Coming Soon |
+| 19 | [AWX NetBox Inventory](#video-19-awx-netbox-inventory) | Dynamic Inventory | 🔜 Coming Soon |
+| 20 | [Execution Environments](#video-20-execution-environments) | Custom EE, Docker | 🔜 Coming Soon |
+| 21 | [AWX + Claude Code](#video-21-awx-claude-code-integration) | AI Agent, AWX API | 🔜 Coming Soon |
+| 22 | [AWX MCP Server](#video-22-awx-mcp-server) | Custom MCP, AWX | 🔜 Coming Soon |
+| 23 | [AWX + Gemini CLI](#video-23-awx-gemini-cli) | Free AI, Remote AWX | 🔜 Coming Soon |
 
 
 
@@ -4033,10 +4039,11 @@ Use Google's FREE Gemini CLI with remote MCP servers. Access your network automa
 
 ### 🎯 What You'll Learn
 
-- Install Gemini CLI (completely FREE)
-- Configure MCP for remote access (SSE transport)
-- Build unified MCP server with multiple tools
-- Access NetBox, Ansible tools from any machine
+- Build unified MCP server with SSE transport
+- Install and configure Gemini CLI on Windows
+- Generate and configure FREE Google API key
+- Connect remote MCP server from any machine
+- Understand rate limits and token usage
 
 ### 🆚 Why Gemini CLI?
 
@@ -4045,7 +4052,37 @@ Use Google's FREE Gemini CLI with remote MCP servers. Access your network automa
 | **Cost** | Subscription | ✅ FREE |
 | **MCP Support** | Yes | ✅ Yes |
 | **Remote Access** | Local (stdio) | ✅ Remote (SSE) |
-| **Auth** | Claude account | Google account |
+| **Auth** | Claude account | Google API key |
+
+### 🤖 Gemini Models Overview
+
+| Model | Best For | Rate Limit | Speed |
+|-------|----------|------------|-------|
+| `gemini-2.5-flash` | General use | ~15 req/min | Fast |
+| `gemini-2.5-flash-lite` | High volume | Higher | Faster |
+| `gemini-2.5-pro` | Complex tasks | ~2 req/min | Slower |
+
+> **Tip:** Use `gemini-2.5-flash` for network automation - good balance of speed and capability.
+
+### 📊 Understanding Token Usage
+
+```
+Model Usage                 Reqs   Input Tokens   Cache Reads  Output Tokens
+──────────────────────────────────────────────────────────────────────────────
+gemini-2.5-flash-lite          8         9,707         2,505            420
+gemini-2.5-flash              12        16,213        59,036            111
+```
+
+| Term | Meaning |
+|------|---------|
+| **Reqs** | Number of API requests made |
+| **Input Tokens** | Tokens sent TO the model (your prompts) |
+| **Cache Reads** | Cached tokens reused (saves quota) |
+| **Output Tokens** | Tokens returned FROM the model (responses) |
+
+> **Rate Limit vs Daily Quota:**
+> - **Rate Limit (429):** Too many requests per minute → Wait 1-2 minutes
+> - **Daily Quota:** Exceeded daily limit → Wait until midnight PST
 
 ### 🏗️ Architecture
 
@@ -4055,8 +4092,8 @@ Use Google's FREE Gemini CLI with remote MCP servers. Access your network automa
 └─────────────────────────────────────────────────────────────────────────────┘
 
 ┌─────────────────────────────┐              ┌─────────────────────────────────┐
-│         YOUR LAPTOP         │              │      ANSIBLE NODE (.119)        │
-│        (Anywhere)           │              │                                 │
+│    WINDOWS LAPTOP/PC        │              │      ANSIBLE NODE (.119)        │
+│       (Anywhere)            │              │                                 │
 │                             │              │  ┌───────────────────────────┐  │
 │  ┌───────────────────────┐  │              │  │   Unified MCP Server      │  │
 │  │      Gemini CLI       │  │   HTTP/SSE   │  │   (Port 8080)             │  │
@@ -4064,8 +4101,7 @@ Use Google's FREE Gemini CLI with remote MCP servers. Access your network automa
 │  │  "Backup all routers" │  │  Port 8080   │  │  ┌─────────────────────┐  │  │
 │  └───────────────────────┘  │              │  │  │   NetBox Tools      │  │  │
 │                             │              │  │  │   - list_devices    │  │  │
-│   Just a Google account!    │              │  │  │   - get_device      │  │  │
-│   No subscription needed    │              │  │  └─────────────────────┘  │  │
+│   Google API Key (FREE)     │              │  │  └─────────────────────┘  │  │
 │                             │              │  │                           │  │
 └─────────────────────────────┘              │  │  ┌─────────────────────┐  │  │
                                              │  │  │   Ansible Tools     │  │  │
@@ -4074,121 +4110,55 @@ Use Google's FREE Gemini CLI with remote MCP servers. Access your network automa
                                              │  │  │   - get_inventory   │  │  │
                                              │  │  └─────────────────────┘  │  │
                                              │  └─────────────┬─────────────┘  │
-                                             │                │                │
                                              │                ▼                │
-                                             │  ┌───────────────────────────┐  │
-                                             │  │     Network Devices       │  │
-                                             │  │   vIOS-R1, R2, R3         │  │
-                                             │  └───────────────────────────┘  │
+                                             │         Network Devices         │
                                              └─────────────────────────────────┘
 ```
 
 ### 🔄 Local vs Remote MCP
 
 ```
-┌─────────────────────────────────────────────────────────────────────────────┐
-│                        LOCAL vs REMOTE MCP COMPARISON                        │
-└─────────────────────────────────────────────────────────────────────────────┘
-
-VIDEOS 12-15: LOCAL MCP (stdio transport)
+VIDEOS 12-15: LOCAL MCP (stdio)
 ┌────────────────────────────────────────────┐
 │            Same Machine Only               │
-│                                            │
 │  ┌──────────┐  stdio   ┌──────────┐       │
 │  │ Claude   │ ───────► │   MCP    │       │
-│  │   CLI    │ ◄─────── │  Server  │       │
+│  │   CLI    │          │  Server  │       │
 │  └──────────┘          └──────────┘       │
-│                                            │
-│  Fast, but limited to local machine        │
 └────────────────────────────────────────────┘
 
-VIDEO 16: REMOTE MCP (SSE transport)
+VIDEO 16: REMOTE MCP (SSE)
 ┌────────────────────────────────────────────────────────────────┐
 │                    Access from ANYWHERE                        │
-│                                                                │
 │  ┌──────────┐   HTTP/SSE    ┌──────────┐                      │
 │  │ Gemini   │ ════════════► │   MCP    │                      │
 │  │   CLI    │   Internet    │  Server  │                      │
-│  │ (Laptop) │ ◄════════════ │ (Server) │                      │
+│  │(Windows) │               │ (Linux)  │                      │
 │  └──────────┘               └──────────┘                      │
-│                                                                │
-│  Coffee shop, home, office - control your network anywhere!   │
 └────────────────────────────────────────────────────────────────┘
 ```
 
-### 🔧 Single Agent + Multi-Tool Concept
+### 🔧 Single Agent + Multi-Tool
 
 ```
-┌─────────────────────────────────────────────────────────────────────────────┐
-│                        SINGLE AGENT + MULTI-TOOL                             │
-│                        (What we're building)                                 │
-└─────────────────────────────────────────────────────────────────────────────┘
-
-                              ┌─────────────────┐
-                              │    Gemini CLI   │
-                              │   (ONE Agent)   │
-                              └────────┬────────┘
-                                       │
-                                       ▼
-                              ┌─────────────────┐
-                              │   MCP Server    │
-                              │  (Multi-Tool)   │
-                              └────────┬────────┘
-                                       │
-              ┌────────────────────────┼────────────────────────┐
-              │                        │                        │
-              ▼                        ▼                        ▼
-     ┌─────────────────┐     ┌─────────────────┐     ┌─────────────────┐
-     │  NetBox Tools   │     │  Ansible Tools  │     │  Device Tools   │
-     │                 │     │                 │     │                 │
-     │ - list_devices  │     │ - list_playbooks│     │ - run_command   │
-     │ - get_device    │     │ - run_playbook  │     │ - get_config    │
-     │                 │     │ - get_inventory │     │                 │
-     └─────────────────┘     └─────────────────┘     └─────────────────┘
-              │                        │                        │
-              │                        │                        │
-              ▼                        ▼                        ▼
-         NetBox API            Ansible CLI              SSH/Netmiko
+                         ┌─────────────────┐
+                         │    Gemini CLI   │
+                         │   (ONE Agent)   │
+                         └────────┬────────┘
+                                  │
+                                  ▼
+                         ┌─────────────────┐
+                         │   MCP Server    │
+                         │  (Multi-Tool)   │
+                         └────────┬────────┘
+                                  │
+           ┌──────────────────────┼──────────────────────┐
+           ▼                      ▼                      ▼
+  ┌─────────────────┐    ┌─────────────────┐    ┌─────────────────┐
+  │  NetBox Tools   │    │  Ansible Tools  │    │ (Future Tools)  │
+  └─────────────────┘    └─────────────────┘    └─────────────────┘
 
 NOTE: This is NOT multi-agent. It's ONE AI with MULTIPLE tools.
-The AI decides WHICH tool to use based on your natural language query.
-```
-
-### 🏠 Home LAB Setup
-
-```
-┌─────────────────────────────────────────────────────────────────────────────┐
-│                         HOME LAB - VIDEO 16 SETUP                            │
-└─────────────────────────────────────────────────────────────────────────────┘
-
-                    ┌─────────────────────────────────────┐
-                    │        INTERNET / VPN               │
-                    └──────────────────┬──────────────────┘
-                                       │
-        ┌──────────────────────────────┼──────────────────────────────┐
-        │                              │                              │
-        ▼                              ▼                              │
-┌──────────────┐               ┌──────────────┐                       │
-│  Your Laptop │               │ Home Router  │                       │
-│  (Anywhere)  │               │ 192.168.1.1  │                       │
-│              │               │              │                       │
-│ Gemini CLI   │               │ Port Forward │                       │
-│              │               │ 8080 → .119  │                       │
-└──────────────┘               └──────┬───────┘                       │
-                                      │                               │
-                    ┌─────────────────┼─────────────────┐             │
-                    │                 │                 │             │
-                    ▼                 ▼                 ▼             │
-           ┌──────────────┐  ┌──────────────┐  ┌──────────────┐      │
-           │ Ansible Node │  │    NetBox    │  │    EVE-NG    │      │
-           │ 192.168.1.119│  │ 192.168.1.120│  │ 192.168.1.100│      │
-           │              │  │              │  │              │      │
-           │ Unified MCP  │  │ Device Data  │  │ vIOS-R1 .201 │      │
-           │ Server :8080 │  │ API :8000    │  │ vIOS-R2 .202 │      │
-           │              │  │              │  │ vIOS-R3 .203 │      │
-           └──────────────┘  └──────────────┘  └──────────────┘      │
-                                                                      │
-└─────────────────────────────────────────────────────────────────────┘
 ```
 
 ### 📁 Project Structure
@@ -4200,45 +4170,14 @@ The AI decides WHICH tool to use based on your natural language query.
 ├── ansible-mcp/             # Video 15 (Local)
 └── unified-mcp-sse/         # Video 16 (Remote!) ← NEW
     ├── .venv/
-    └── unified_mcp_sse.py   # All tools in one server
+    └── unified_mcp_sse.py
 ```
 
-### 💻 Commands
+---
 
-<details>
-<summary>1. Install Gemini CLI (on Laptop)</summary>
+## 🖥️ PART 1: Server Setup (Ansible Node)
 
-```bash
-# Option 1: npm
-npm install -g @google/gemini-cli
-
-# Option 2: Direct download
-curl -fsSL https://cli.gemini.google.com/install.sh | bash
-
-# Verify
-gemini --version
-```
-
-</details>
-
-<details>
-<summary>2. Authenticate with Google (FREE)</summary>
-
-```bash
-# Login with Google account
-gemini auth login
-
-# This opens browser - just sign in with Google
-# No subscription needed! Completely FREE!
-
-# Verify
-gemini auth status
-```
-
-</details>
-
-<details>
-<summary>3. Create Unified MCP Server (on Ansible Node)</summary>
+### 💻 Step 1.1: Create Project Folder
 
 ```bash
 # On Ansible Node (192.168.1.119)
@@ -4246,14 +4185,59 @@ cd ~/mcp-servers
 mkdir -p unified-mcp-sse
 cd unified-mcp-sse
 
+# Verify
+pwd
+# Expected: /home/user/mcp-servers/unified-mcp-sse
+```
+
+### 💻 Step 1.2: Create Virtual Environment
+
+```bash
 # Create venv
 python3 -m venv .venv
+
+# Activate
 source .venv/bin/activate
 
-# Install dependencies
-pip install fastmcp requests netmiko
+# Verify - should show venv path
+which python
+# Expected: /home/user/mcp-servers/unified-mcp-sse/.venv/bin/python
+```
 
-# Create unified server
+### 💻 Step 1.3: Install Dependencies
+
+```bash
+# Install required packages
+pip install fastmcp requests uvicorn
+
+# Verify installations
+pip show fastmcp | grep Version
+pip show uvicorn | grep Version
+
+# Expected output:
+# Version: 2.x.x (fastmcp)
+# Version: 0.x.x (uvicorn)
+```
+
+### 💻 Step 1.4: Get NetBox API Token
+
+```bash
+# If you don't know your token, get it from NetBox UI:
+# 1. Login to NetBox: http://192.168.1.120:8000
+# 2. Go to: Admin → API Tokens → Add Token
+# 3. Copy the token
+
+# Test NetBox API connectivity
+curl -s http://192.168.1.120:8000/api/dcim/devices/ \
+  -H "Authorization: Token YOUR-NETBOX-TOKEN" | head -100
+
+# Should return JSON with device list
+```
+
+### 💻 Step 1.5: Create Unified MCP Server
+
+```bash
+# Create the server file
 cat << 'EOF' > unified_mcp_sse.py
 #!/usr/bin/env python3
 """Unified MCP Server with SSE Transport for Remote Access"""
@@ -4262,36 +4246,49 @@ from mcp.server.fastmcp import FastMCP
 import subprocess
 import requests
 from pathlib import Path
+import uvicorn
 
 mcp = FastMCP("Network Automation MCP")
 
-# Configuration
+# ============================================
+# CONFIGURATION - UPDATE THESE VALUES!
+# ============================================
 ANSIBLE_DIR = Path.home() / "ansible-project"
 ANSIBLE_BIN = Path.home() / "ansible-project/ansible-venv/bin"
 NETBOX_URL = "http://192.168.1.120:8000"
-NETBOX_TOKEN = "your-netbox-token-here"
+NETBOX_TOKEN = "YOUR-NETBOX-TOKEN-HERE"  # ← UPDATE THIS!
 
-# === NetBox Tools (Direct API) ===
+# ============================================
+# NETBOX TOOLS
+# ============================================
 @mcp.tool()
 def netbox_list_devices() -> str:
     """List devices with IPs from NetBox (direct API - fast query)"""
-    headers = {"Authorization": f"Token {NETBOX_TOKEN}"}
-    r = requests.get(f"{NETBOX_URL}/api/dcim/devices/", headers=headers)
-    devices = r.json().get('results', [])
-    result = "Devices in NetBox:\n"
-    for d in devices:
-        ip = d.get('primary_ip4', {})
-        ip_addr = ip.get('address', 'No IP') if ip else 'No IP'
-        result += f"  - {d['name']} ({ip_addr})\n"
-    return result
+    try:
+        headers = {"Authorization": f"Token {NETBOX_TOKEN}"}
+        r = requests.get(f"{NETBOX_URL}/api/dcim/devices/", headers=headers, timeout=10)
+        r.raise_for_status()
+        devices = r.json().get('results', [])
+        if not devices:
+            return "No devices found in NetBox"
+        result = "Devices in NetBox:\n"
+        for d in devices:
+            ip = d.get('primary_ip4', {})
+            ip_addr = ip.get('address', 'No IP') if ip else 'No IP'
+            result += f"  - {d['name']} ({ip_addr})\n"
+        return result
+    except Exception as e:
+        return f"Error connecting to NetBox: {str(e)}"
 
-# === Ansible Tools (via Ansible CLI) ===
+# ============================================
+# ANSIBLE TOOLS
+# ============================================
 @mcp.tool()
 def ansible_list_playbooks() -> str:
     """List all available Ansible playbooks"""
     playbooks = list((ANSIBLE_DIR / "playbooks").glob("*.yml"))
     if not playbooks:
-        return "No playbooks found"
+        return "No playbooks found in " + str(ANSIBLE_DIR / "playbooks")
     result = "Available playbooks:\n"
     for p in playbooks:
         result += f"  - {p.name}\n"
@@ -4302,10 +4299,11 @@ def ansible_run_playbook(playbook: str, limit: str = None) -> str:
     """Run an Ansible playbook with optional host limit"""
     playbook_path = ANSIBLE_DIR / "playbooks" / playbook
     if not playbook_path.exists():
-        return f"Error: Playbook '{playbook}' not found"
+        return f"Error: Playbook '{playbook}' not found at {playbook_path}"
     
-    # IMPORTANT: Use absolute path to ansible-playbook
-    cmd = [str(ANSIBLE_BIN / "ansible-playbook"), str(playbook_path)]
+    # IMPORTANT: Use absolute path to ansible-playbook from your venv
+    ansible_cmd = str(ANSIBLE_BIN / "ansible-playbook")
+    cmd = [ansible_cmd, str(playbook_path)]
     if limit:
         cmd.extend(["--limit", limit])
     
@@ -4314,160 +4312,441 @@ def ansible_run_playbook(playbook: str, limit: str = None) -> str:
             cmd, cwd=ANSIBLE_DIR,
             capture_output=True, text=True, timeout=300
         )
-        return result.stdout + result.stderr
+        output = result.stdout + result.stderr
+        return output if output else "Playbook executed (no output)"
+    except subprocess.TimeoutExpired:
+        return "Error: Playbook execution timed out (5 min limit)"
     except Exception as e:
-        return f"Error: {str(e)}"
+        return f"Error running playbook: {str(e)}"
 
 @mcp.tool()
 def ansible_get_inventory() -> str:
-    """Get Ansible inventory groups and hosts (via NetBox plugin)"""
-    # IMPORTANT: Use absolute path to ansible-inventory
-    result = subprocess.run(
-        [str(ANSIBLE_BIN / "ansible-inventory"), "--graph"],
-        cwd=ANSIBLE_DIR, capture_output=True, text=True
-    )
-    return f"Ansible Inventory:\n{result.stdout}"
+    """Get Ansible inventory groups and hosts (via NetBox dynamic inventory)"""
+    ansible_cmd = str(ANSIBLE_BIN / "ansible-inventory")
+    try:
+        result = subprocess.run(
+            [ansible_cmd, "--graph"],
+            cwd=ANSIBLE_DIR, capture_output=True, text=True, timeout=30
+        )
+        output = result.stdout
+        return f"Ansible Inventory:\n{output}" if output else "No inventory data"
+    except Exception as e:
+        return f"Error getting inventory: {str(e)}"
 
+# ============================================
+# HOST HEADER FIX FOR REMOTE ACCESS
+# ============================================
+class HostFixMiddleware:
+    """Middleware to fix host header for remote SSE connections"""
+    def __init__(self, app):
+        self.app = app
+
+    async def __call__(self, scope, receive, send):
+        if scope["type"] == "http":
+            headers = []
+            for name, value in scope.get("headers", []):
+                if name == b"host":
+                    value = b"localhost:8080"
+                headers.append((name, value))
+            scope["headers"] = headers
+        await self.app(scope, receive, send)
+
+# ============================================
+# MAIN - START SERVER
+# ============================================
 if __name__ == "__main__":
-    # Run with SSE transport for remote access
-    print("Starting MCP Server on http://0.0.0.0:8080")
-    mcp.run(transport="sse", host="0.0.0.0", port=8080)
+    print("=" * 50)
+    print("Starting Unified MCP Server")
+    print("=" * 50)
+    print(f"NetBox URL: {NETBOX_URL}")
+    print(f"Ansible Dir: {ANSIBLE_DIR}")
+    print(f"Listening on: http://0.0.0.0:8080")
+    print("=" * 50)
+    
+    # Wrap SSE app with host fix middleware
+    app = HostFixMiddleware(mcp.sse_app())
+    
+    # Start uvicorn server
+    uvicorn.run(app, host="0.0.0.0", port=8080)
 EOF
 
+# Make executable
 chmod +x unified_mcp_sse.py
 ```
 
-</details>
-
-<details>
-<summary>4. Start Remote MCP Server</summary>
+### 💻 Step 1.6: Update Configuration
 
 ```bash
-# On Ansible Node (192.168.1.119)
-cd ~/mcp-servers/unified-mcp-sse
-source .venv/bin/activate
+# Edit the file to add your NetBox token
+nano unified_mcp_sse.py
 
-# Start server (foreground - see logs)
+# Find this line and update:
+NETBOX_TOKEN = "YOUR-NETBOX-TOKEN-HERE"  # ← Put your actual token
+
+# Save: Ctrl+O, Enter, Ctrl+X
+```
+
+### 💻 Step 1.7: Start MCP Server
+
+```bash
+# Start the server
 python unified_mcp_sse.py
 
-# Or run in background
-nohup python unified_mcp_sse.py > mcp.log 2>&1 &
-
-# Verify server is running
-curl http://localhost:8080/health
-
-# Check logs if needed
-tail -f mcp.log
+# Expected output:
+# ==================================================
+# Starting Unified MCP Server
+# ==================================================
+# NetBox URL: http://192.168.1.120:8000
+# Ansible Dir: /home/user/ansible-project
+# Listening on: http://0.0.0.0:8080
+# ==================================================
+# INFO:     Started server process [xxxxx]
+# INFO:     Waiting for application startup.
+# INFO:     Application startup complete.
+# INFO:     Uvicorn running on http://0.0.0.0:8080 (Press CTRL+C to quit)
 ```
 
-</details>
-
-<details>
-<summary>5. Configure Gemini CLI (on Laptop)</summary>
+### 💻 Step 1.8: Verify Port is Listening (New Terminal)
 
 ```bash
-# Add remote MCP server
-gemini mcp add network-automation \
-  --transport sse \
-  --url http://192.168.1.119:8080
+# Open new terminal, check port
+ss -tlnp | grep 8080
 
-# Verify connection
+# Expected:
+# LISTEN 0 2048 0.0.0.0:8080 0.0.0.0:* users:(("python",pid=xxxx,fd=6))
+```
+
+### 💻 Step 1.9: Test SSE Endpoint Locally
+
+```bash
+# Test the SSE endpoint (will hang - that's normal for SSE)
+curl http://localhost:8080/sse
+
+# Press Ctrl+C to stop
+# If you see "Invalid Host header" - the middleware isn't working
+# If it hangs waiting - that's correct! SSE keeps connection open
+```
+
+### 💻 Step 1.10: Check Firewall
+
+```bash
+# Allow port 8080 through firewall
+sudo ufw allow 8080/tcp
+
+# Check status
+sudo ufw status
+
+# If firewall inactive, that's fine - port is open
+```
+
+---
+
+## 💻 PART 2: Client Setup (Windows)
+
+### 💻 Step 2.1: Install Node.js (if not installed)
+
+```powershell
+# Check if Node.js is installed
+node --version
+
+# If not installed:
+# 1. Go to https://nodejs.org
+# 2. Download LTS version
+# 3. Run installer (all defaults)
+# 4. Restart PowerShell
+```
+
+### 💻 Step 2.2: Install Gemini CLI
+
+```powershell
+# Install Gemini CLI globally
+npm install -g @google/gemini-cli
+
+# Verify installation
+gemini --version
+
+# Expected: 0.24.x or higher
+```
+
+### 💻 Step 2.3: Generate Google API Key (FREE)
+
+```
+1. Open browser: https://aistudio.google.com/apikey
+
+2. Sign in with Google account
+
+3. Click "Create API key in new project"
+   (This auto-creates a Google Cloud project)
+
+4. Copy the API key (starts with "AIza...")
+
+5. Keep this key safe - you'll need it next!
+```
+
+### 💻 Step 2.4: Configure API Key (Permanent)
+
+```powershell
+# Option A: Create PowerShell profile (if doesn't exist)
+New-Item -Path $PROFILE -ItemType File -Force
+
+# Open profile in notepad
+notepad $PROFILE
+
+# Add this line (replace with YOUR key):
+$env:GEMINI_API_KEY = "AIzaSy...your-key-here"
+
+# Save and close notepad
+
+# Restart PowerShell for changes to take effect
+```
+
+### 💻 Step 2.5: Verify API Key is Set
+
+```powershell
+# After restarting PowerShell, verify:
+echo $env:GEMINI_API_KEY
+
+# Should display your API key
+# If empty - profile didn't load, try again
+```
+
+### 💻 Step 2.6: Test Connectivity to Server
+
+```powershell
+# Test if you can reach the MCP server
+curl.exe http://192.168.1.119:8080/sse
+
+# Expected: Connection stays open (SSE stream)
+# Press Ctrl+C to stop
+
+# If "Connection refused" - check server is running
+# If timeout - check firewall/network
+```
+
+### 💻 Step 2.7: Configure Gemini MCP Settings
+
+```powershell
+# Open settings file in notepad
+notepad $env:USERPROFILE\.gemini\settings.json
+
+# If file doesn't exist, create it with this content:
+```
+
+```json
+{
+  "mcpServers": {
+    "network-automation": {
+      "url": "http://192.168.1.119:8080/sse",
+      "type": "sse"
+    }
+  }
+}
+```
+
+```powershell
+# Save and close notepad
+
+# NOTE: The Gemini CLI 'mcp add' command has a bug that doesn't save the URL
+# That's why we manually edit the settings file
+```
+
+### 💻 Step 2.8: Verify MCP Connection
+
+```powershell
+# Check MCP server status
 gemini mcp list
 
-# Expected: network-automation: ... - Connected
+# Expected output:
+# Configured MCP servers:
+# ✓ network-automation: http://192.168.1.119:8080/sse (sse) - Connected
+
+# If shows "Disconnected":
+# 1. Check server is running on Ansible node
+# 2. Check URL in settings.json is correct
+# 3. Check firewall allows port 8080
+```
+
+---
+
+## 🧪 PART 3: Testing
+
+### 💻 Step 3.1: Start Gemini CLI
+
+```powershell
+# Start Gemini
+gemini
+
+# You should see the Gemini banner and prompt
+# Look for "1 MCP server" message
+```
+
+### 💻 Step 3.2: Test Queries
+
+```
+# Query 1: List NetBox devices
+> List all devices in NetBox
+
+# Expected: Shows devices from NetBox
+# Look for: ✓ netbox_list_devices (network-automation MCP Server)
+
+# Query 2: List playbooks
+> Show available Ansible playbooks
+
+# Expected: Shows .yml files from ~/ansible-project/playbooks
+
+# Query 3: Get inventory
+> Show the Ansible inventory
+
+# Expected: Shows host groups from NetBox dynamic inventory
+
+# Query 4: Run playbook (be careful!)
+> Run backup_config playbook on vIOS-R1
+```
+
+### 💻 Step 3.3: Check Token Usage
+
+```powershell
+# Exit Gemini CLI (Ctrl+C or type /exit)
+
+# Check usage at:
+# https://aistudio.google.com/apikey
+# Click on your key → View metrics
+```
+
+---
+
+## 🔧 Troubleshooting
+
+<details>
+<summary>❌ "Disconnected" in gemini mcp list</summary>
+
+```powershell
+# 1. Check server is running (on Ansible Node)
+ps aux | grep unified_mcp
+
+# 2. Check port is open
+ss -tlnp | grep 8080
+
+# 3. Test connectivity from Windows
+curl.exe http://192.168.1.119:8080/sse
+
+# 4. Verify settings.json has correct URL
+cat $env:USERPROFILE\.gemini\settings.json
 ```
 
 </details>
 
 <details>
-<summary>6. Test Remote Access</summary>
+<summary>❌ "Invalid Host header" error</summary>
 
 ```bash
-# Start Gemini CLI
-gemini
+# The HostFixMiddleware should fix this
+# Make sure unified_mcp_sse.py has the middleware class
 
-# Try these queries (from anywhere!):
-
-# NetBox queries (direct API)
-> "List all devices in NetBox"
-> "What devices do we have?"
-
-# Ansible queries
-> "Show available playbooks"
-> "What's the current inventory?"
-
-# Run automation
-> "Backup all router configs"
-> "Deploy NTP on vIOS-R1"
-> "Run backup_config playbook on all devices"
+# Restart server after any changes
+pkill -f unified_mcp
+python unified_mcp_sse.py
 ```
 
 </details>
 
-### 🔍 Tool Selection: How AI Decides
+<details>
+<summary>❌ "Rate limit exceeded" or "429 TooManyRequests"</summary>
 
-When you ask a question, the AI reads tool descriptions and picks the best match:
+```
+This is per-minute rate limiting, not daily quota.
 
-| Your Query | Tool Called | Why |
-|------------|-------------|-----|
-| "List devices in NetBox" | `netbox_list_devices` | "NetBox" in query |
-| "Show Ansible inventory" | `ansible_get_inventory` | "Ansible" context |
-| "Run backup playbook" | `ansible_run_playbook` | "playbook" keyword |
-| "What playbooks exist?" | `ansible_list_playbooks` | Lists playbooks |
+Solution: Wait 1-2 minutes and try again.
 
-> **Note:** Both `netbox_list_devices` and `ansible_get_inventory` get data from NetBox, but via different paths. Direct API is faster for quick lookups. Ansible inventory shows groupings.
+To avoid:
+- Don't spam requests quickly
+- Wait a few seconds between queries
+```
+
+</details>
+
+<details>
+<summary>❌ "Daily quota exhausted"</summary>
+
+```
+Free tier daily limits reached.
+
+Solutions:
+1. Wait until midnight PST (quota resets)
+2. Switch to different model: /model → select gemini-2.5-flash-lite
+3. Create new API key with different Google account
+```
+
+</details>
+
+<details>
+<summary>❌ "No devices found in NetBox"</summary>
+
+```bash
+# 1. Check NetBox token in script
+grep NETBOX_TOKEN ~/mcp-servers/unified-mcp-sse/unified_mcp_sse.py
+
+# 2. Test NetBox API directly
+curl http://192.168.1.120:8000/api/dcim/devices/ \
+  -H "Authorization: Token YOUR-TOKEN"
+
+# 3. Restart server after fixing token
+pkill -f unified_mcp
+python unified_mcp_sse.py
+```
+
+</details>
+
+<details>
+<summary>❌ GEMINI_API_KEY not set</summary>
+
+```powershell
+# Check if variable is set
+echo $env:GEMINI_API_KEY
+
+# Set for current session
+$env:GEMINI_API_KEY = "your-key-here"
+
+# Or check profile loaded
+cat $PROFILE
+```
+
+</details>
 
 ### 🔐 Security Recommendations
 
 | Risk | Mitigation |
 |------|------------|
-| Open port 8080 | Use VPN or SSH tunnel |
-| No authentication | Add API key validation to MCP server |
-| HTTP unencrypted | Use nginx reverse proxy with SSL |
-| Credentials in code | Use environment variables |
+| Open port 8080 | Use VPN or SSH tunnel for production |
+| API key in profile | Don't share your PowerShell profile |
+| NetBox token in script | Use environment variables in production |
+| HTTP unencrypted | Use nginx + SSL for production |
 
-<details>
-<summary>SSH Tunnel Option (Secure)</summary>
+---
 
-```bash
-# On your laptop - create SSH tunnel
-ssh -L 8080:localhost:8080 user@192.168.1.119
-
-# Then configure Gemini to use localhost
-gemini mcp add network-automation \
-  --transport sse \
-  --url http://localhost:8080
-
-# Traffic is now encrypted through SSH!
-```
-
-</details>
-
-### 📦 Example Queries
+## 📦 Example Queries
 
 ```bash
-# Quick device lookup
+# NetBox queries
+"What devices do we have in NetBox?"
 "List all network devices"
-"What's in NetBox?"
 
-# Inventory with groups
-"Show me the Ansible inventory"
-"What groups do we have?"
+# Ansible queries
+"Show me available playbooks"
+"What's in the Ansible inventory?"
 
-# Run automation
-"Backup configs for all routers"
-"Deploy NTP on vIOS-R1"
+# Automation (careful - these make changes!)
+"Run backup_config playbook on all routers"
+"Deploy NTP configuration on vIOS-R1"
 "Run show_version playbook on device_roles_router"
-
-# Combined workflows
-"First show me all devices, then backup their configs"
 ```
 
 ---
 
+
 ## 🚀 AWX Series - Coming Next!
 
-The next phase of our Network Automation journey - Enterprise-grade automation with Ansible AWX on Kubernetes!
+The next phase of our Network Automation journey - Enterprise-grade automation with Ansible AWX!
 
 ### 📺 AWX Video Index
 
@@ -4495,193 +4774,52 @@ The next phase of our Network Automation journey - Enterprise-grade automation w
 
 ### 📋 Overview
 
-Deploy Ansible AWX on lightweight K3s Kubernetes in your EVE-NG home lab. Enterprise-grade automation with Web UI, RBAC, and job scheduling.
-
-### 🎯 What You'll Learn
-
-- Install K3s (lightweight Kubernetes)
-- Deploy AWX Operator via Helm
-- Configure AWX instance
-- Access AWX Web UI
-- Initial admin setup
+Deploy Ansible AWX on lightweight K3s Kubernetes in your home lab.
 
 ### ❓ Why AWX?
 
 | Feature | Ansible CLI | AWX |
 |---------|-------------|-----|
-| **Interface** | Terminal only | ✅ Web UI |
-| **Scheduling** | Cron (manual) | ✅ Built-in scheduler |
-| **RBAC** | None | ✅ Role-based access |
-| **Audit** | Manual logs | ✅ Job history |
-| **Credentials** | Files/Vault | ✅ Secure credential store |
-| **Scaling** | Single node | ✅ Distributed execution |
+| Interface | Terminal | ✅ Web UI |
+| Scheduling | Cron | ✅ Built-in |
+| RBAC | None | ✅ Role-based |
+| Audit | Manual | ✅ Job history |
+| Credentials | Files | ✅ Secure store |
 
-### 🏗️ Architecture
-
-```
-┌─────────────────────────────────────────────────────────────────────────────┐
-│                       AWX ON K3s KUBERNETES                                  │
-└─────────────────────────────────────────────────────────────────────────────┘
-
-┌─────────────────────────────────────────────────────────────────────────────┐
-│                         K3s Kubernetes Cluster                               │
-│                         (Single Node - Home Lab)                             │
-│                                                                              │
-│   ┌─────────────────────────────────────────────────────────────────────┐   │
-│   │                         AWX Namespace                                │   │
-│   │                                                                      │   │
-│   │   ┌─────────────┐   ┌─────────────┐   ┌─────────────┐              │   │
-│   │   │   AWX Web   │   │  AWX Task   │   │  AWX EE     │              │   │
-│   │   │   (Pod)     │   │   (Pod)     │   │   (Pod)     │              │   │
-│   │   │             │   │             │   │             │              │   │
-│   │   │ Port 8052   │   │ Job Runner  │   │ Execution   │              │   │
-│   │   │ Web UI      │   │             │   │ Environment │              │   │
-│   │   └─────────────┘   └─────────────┘   └─────────────┘              │   │
-│   │          │                 │                 │                      │   │
-│   │          └─────────────────┼─────────────────┘                      │   │
-│   │                            │                                        │   │
-│   │   ┌─────────────┐   ┌─────────────┐                                │   │
-│   │   │ PostgreSQL  │   │    Redis    │                                │   │
-│   │   │   (Pod)     │   │   (Pod)     │                                │   │
-│   │   │  Database   │   │   Cache     │                                │   │
-│   │   └─────────────┘   └─────────────┘                                │   │
-│   │                                                                      │   │
-│   └──────────────────────────────────────────────────────────────────────┘   │
-│                                                                              │
-└──────────────────────────────────────────────────────────────────────────────┘
-                                    │
-                                    │ SSH/API
-                                    ▼
-                    ┌───────────────────────────────┐
-                    │       Network Devices         │
-                    │       vIOS-R1, R2, R3         │
-                    └───────────────────────────────┘
-```
-
-### 🏠 Home LAB Setup for AWX
+### 🏗️ Architecture (Preview)
 
 ```
-┌─────────────────────────────────────────────────────────────────────────────┐
-│                         HOME LAB - VIDEO 17 SETUP                            │
-└─────────────────────────────────────────────────────────────────────────────┘
-
-                              ┌──────────────────┐
-                              │   Home Network   │
-                              │  192.168.1.0/24  │
-                              └────────┬─────────┘
-                                       │
-       ┌───────────────────────────────┼───────────────────────────────┐
-       │                               │                               │
-       ▼                               ▼                               ▼
-┌──────────────┐              ┌──────────────┐              ┌──────────────┐
-│  AWX Server  │              │    NetBox    │              │    EVE-NG    │
-│192.168.1.121 │              │192.168.1.120 │              │192.168.1.100 │
-│   (NEW!)     │              │              │              │              │
-│              │              │              │              │              │
-│ - K3s        │              │ - Docker     │              │ - vIOS-R1    │
-│ - AWX        │              │ - API        │              │ - vIOS-R2    │
-│ - Port 8052  │              │              │              │ - vIOS-R3    │
-│              │              │              │              │              │
-│ 4 CPU        │              │              │              │              │
-│ 8GB RAM      │              │              │              │              │
-│ 50GB Disk    │              │              │              │              │
-└──────────────┘              └──────────────┘              └──────────────┘
+┌─────────────────────────────────────────────────────────────────┐
+│                    K3s Kubernetes Cluster                        │
+│                                                                  │
+│   ┌─────────────┐   ┌─────────────┐   ┌─────────────┐          │
+│   │   AWX Web   │   │  AWX Task   │   │  AWX EE     │          │
+│   │   (Pod)     │   │   (Pod)     │   │   (Pod)     │          │
+│   └─────────────┘   └─────────────┘   └─────────────┘          │
+│                                                                  │
+│   ┌─────────────┐   ┌─────────────┐                            │
+│   │ PostgreSQL  │   │    Redis    │                            │
+│   └─────────────┘   └─────────────┘                            │
+└─────────────────────────────────────────────────────────────────┘
+                              │
+                              ▼
+                      Network Devices
 ```
 
 ### 💻 Commands (Preview)
 
-<details>
-<summary>1. Install K3s</summary>
-
 ```bash
-# Install K3s (lightweight Kubernetes)
+# Install K3s
 curl -sfL https://get.k3s.io | sh -
-
-# Verify
-sudo kubectl get nodes
-
-# Set permissions for regular user
-mkdir -p ~/.kube
-sudo cp /etc/rancher/k3s/k3s.yaml ~/.kube/config
-sudo chown $USER:$USER ~/.kube/config
-
-# Verify
-kubectl get nodes
-```
-
-</details>
-
-<details>
-<summary>2. Install AWX Operator</summary>
-
-```bash
-# Add AWX Helm repo
-helm repo add awx-operator https://ansible-community.github.io/awx-operator-helm/
-helm repo update
-
-# Create namespace
-kubectl create namespace awx
 
 # Install AWX Operator
 helm install awx-operator awx-operator/awx-operator -n awx
 
-# Verify operator is running
-kubectl get pods -n awx
-```
-
-</details>
-
-<details>
-<summary>3. Deploy AWX Instance</summary>
-
-```bash
-# Create AWX instance manifest
-cat << 'EOF' > awx-instance.yaml
-apiVersion: awx.ansible.com/v1beta1
-kind: AWX
-metadata:
-  name: awx
-  namespace: awx
-spec:
-  service_type: NodePort
-  nodeport_port: 8052
-EOF
-
-# Apply
-kubectl apply -f awx-instance.yaml
-
-# Watch deployment (takes 5-10 minutes)
-kubectl get pods -n awx -w
-```
-
-</details>
-
-<details>
-<summary>4. Get Admin Password</summary>
-
-```bash
-# Get admin password
-kubectl get secret awx-admin-password -n awx -o jsonpath="{.data.password}" | base64 -d
-
-# Access Web UI
+# Access UI
 # http://192.168.1.121:8052
-# Username: admin
-# Password: (from above command)
 ```
-
-</details>
-
-### 📋 AWX Server Requirements
-
-| Resource | Minimum | Recommended |
-|----------|---------|-------------|
-| CPU | 2 cores | 4 cores |
-| RAM | 4 GB | 8 GB |
-| Disk | 20 GB | 50 GB |
-| OS | Ubuntu 22.04 | Ubuntu 22.04 |
 
 ---
-
 
 ## 📚 Additional Resources
 
@@ -4694,27 +4832,29 @@ kubectl get secret awx-admin-password -n awx -o jsonpath="{.data.password}" | ba
 | K3s | [k3s.io](https://k3s.io/) |
 | MCP Protocol | [modelcontextprotocol.io](https://modelcontextprotocol.io/) |
 | FastMCP | [github.com/jlowin/fastmcp](https://github.com/jlowin/fastmcp) |
-| Gemini CLI | [ai.google.dev](https://ai.google.dev/) |
+| Gemini CLI | [github.com/google-gemini/gemini-cli](https://github.com/google-gemini/gemini-cli) |
+| Google AI Studio | [aistudio.google.com](https://aistudio.google.com/) |
 
 ---
 
 ## 📝 Changelog
 
+### v25.0 (2025-01-18)
+- ✅ Video 16: Complete rewrite with step-by-step instructions
+  - Server setup: 10 detailed steps with verification
+  - Client setup: 8 detailed steps with verification
+  - Testing section with example queries
+  - Comprehensive troubleshooting guide
+  - Gemini models and token usage explanation
+  - Rate limit vs daily quota explanation
+  - HostFixMiddleware for remote SSE connections
+  - Manual settings.json configuration (Gemini CLI bug workaround)
+
 ### v24.0 (2025-01-17)
-- ✅ Video 16: Major update
-  - Expanded architecture diagrams
-  - Added Single Agent + Multi-Tool explanation
-  - Added Home Lab setup diagram
-  - Improved unified_mcp_sse.py with better descriptions
-  - Added Tool Selection explanation
-  - Added SSH tunnel security option
-- ✅ Video 17: Added comprehensive preview
-  - AWX on K3s architecture
-  - Server requirements
-  - Installation commands preview
+- ✅ Video 16: Architecture diagrams and basic setup
+- ✅ Video 17: AWX preview added
 
 ### v23.0 (2025-01-16)
-- ✅ Video 16: Complete Gemini CLI + Remote MCP documentation
 - ✅ Added AWX Series roadmap (Videos 17-23)
 
 ### v22.0 (2025-01-16)

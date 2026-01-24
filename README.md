@@ -4031,7 +4031,7 @@ ls -la ~/ansible-project/playbooks/
 
 ## Video 16: Gemini CLI + Remote MCP
 
-🔜 **Coming Soon**
+[▶️ Watch on YouTube](https://www.youtube.com/watch?v=rN9GJgPKeCQ)
 
 ### 📋 Overview
 

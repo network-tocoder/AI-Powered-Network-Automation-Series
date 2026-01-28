@@ -5100,10 +5100,10 @@ kubectl get awx -n awx
 </details>
 
 <details>
-<summary>7. Wait for AWX Deployment (5-10 minutes)</summary>
+<summary>7. Wait for AWX Deployment </summary>
 
 ```bash
-# Watch all pods come up - this takes 5-10 minutes!
+# Watch all pods come up - this takes an hours depends your connection & resouces!
 kubectl get pods -n awx -w
 
 # Expected final state (all Running):

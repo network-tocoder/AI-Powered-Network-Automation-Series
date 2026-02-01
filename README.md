@@ -5340,6 +5340,413 @@ Build custom Execution Environments (EE) with network automation collections. EE
 └─────────────────────────────────────────────────────────────────────────────┘
 ```
 
+### 💻 Commands
+
+<summary>1. Create EE Project Directory</summary>
+
+```bash
+# Create and enter project directory
+mkdir -p ~/custom-ee && cd ~/custom-ee
+
+```
+
+</details>
+
+<details>
+<summary>2. Setup UV & install ansible-builder</summary>
+
+```bash
+# Install UV (if not installed) & add it home bin to PATH
+curl -LsSf https://astral.sh/uv/install.sh | sh
+export PATH="$HOME/.uv/bin:$PATH"
+
+# Verify installation
+uv --version
+
+# Initialize project & add dependencies
+uv init
+uv add ansible-builder ansible-navigator
+
+# Verify installation
+ansible-builder --version
+
+# Install Docker or Podman (if not installed)
+sudo apt update && sudo apt install podman -y
+# Or for Fedora/CentOS:
+sudo dnf install -y podman
+# Or for Docker:
+sudo apt update && sudo apt install docker.io -y
+sudo usermod -aG docker $USER
+newgrp docker
+
+
+```
+
+</details>
+
+<details>
+
+<details>
+<summary>3. Create requirements.yml (Collections)</summary>
+
+Note: We are using ansible.netcommon 6.0.0+ to ensure the latest connection plugins for Cisco and Fortinet are available.
+
+```bash
+cat <<'EOF' > requirements.yml
+---
+collections:
+  # Network automation essentials
+  - name: ansible.netcommon
+    version: ">=6.0.0"
+  - name: ansible.utils
+    version: ">=3.0.0"
+  
+  # Cisco support
+  - name: cisco.ios
+    version: ">=6.0.0"
+  
+  # NetBox integration (for dynamic inventory)
+  - name: netbox.netbox
+    version: ">=3.19.0"
+  
+  # FortiGate support (optional)
+  - name: fortinet.fortios
+    version: ">=2.3.0"
+EOF
+
+
+cat requirements.yml
+```
+
+</details>
+
+<details>
+<summary>4. Create requirements.txt (Python Packages)</summary>
+
+Note: pynetbox is required for the NetBox inventory, while netmiko and paramiko handle the SSH connections to your routers and firewalls.
+
+```bash
+cat <<'EOF' > requirements.txt
+# NetBox API client
+pynetbox>=7.3.3
+
+# IP address utilities
+netaddr>=1.3.0
+
+# Network device connectivity
+paramiko>=3.4.0
+netmiko>=4.4.0
+
+# JSON parsing
+jmespath>=1.0.0
+
+# HTTP requests
+requests>=2.32.0
+EOF
+
+cat requirements.txt
+```
+
+</details>
+
+<details>
+
+<summary>5. Pull Base Image </summary>
+
+```bash
+
+# Download base image first (saves time during build)
+docker pull quay.io/ansible/awx-ee:24.6.1
+
+# Verify image downloaded
+docker images | grep awx-ee
+
+```
+</details>
+
+<details>
+
+<summary>6. Create execution-environment.yml</summary>
+
+````yaml
+---
+version: 3
+images:
+  base_image:
+    name: quay.io/ansible/awx-ee:24.6.1
+dependencies:
+  galaxy: requirements.yml
+  python: requirements.txt
+
+```
+
+</details>
+
+<details>
+<summary>7. Build the Execution Environment</summary>
+
+Build using ansible-builder with UV
+
+
+```bash
+
+# Set registry auth path to user home
+export REGISTRY_AUTH_FILE=$HOME/.docker/config.json
+
+# Build the EE image
+uv run ansible-builder build -tag localhost/network-awx-ee:latest --container-runtime docker --verbosity 3
+
+# If using Docker instead of Podman:
+uv run ansible-builder build -tag localhost/network-awx-ee:latest --container-runtime podman --verbosity 3
+
+# Verify image was created
+podman images | grep network-ee
+# Or: docker images | grep network-ee
+```
+
+</details>
+
+<details>
+<summary>7. Test the EE Locally</summary>
+
+```bash
+# Run a container from the EE
+podman run -it --rm network-ee:1.0 /bin/bash
+
+# Inside container, verify collections
+ansible-galaxy collection list
+
+# Verify Python packages
+pip list | grep -E "pynetbox|netmiko|netaddr"
+
+# Check Ansible version
+ansible --version
+
+# Exit container
+exit
+```
+
+</details>
+
+<details>
+<summary>8. Push EE to Registry (Option A: Local Registry)</summary>
+
+In our use case, we are building EE on Ansible node & AWX run on different node.
+
+```bash
+# K3s includes a local registry, but for simplicity we'll load directly
+
+# Save image to tar file
+podman save network-ee:1.0 -o network-ee-1.0.tar
+# If using Docker:
+# docker save network-ee:1.0 -o network-ee-1.0.tar
+```
+
+
+```bash
+# Check image & ship EE to AWX node. 
+ls -l
+scp network-ee-1.0.tar user@192.168.1.129:/tmp/
+# SSH to AWX node
+ls -l /tmp
+
+# Import to K3s containerd (if EE ans AWX run on same node)
+sudo k3s ctr images import network-ee-1.0.tar
+
+# Verify in K3s
+sudo k3s ctr images list | grep network-ee
+```
+
+</details>
+
+<details>
+<summary>8. Push EE to Registry (Option B: Docker Hub)</summary>
+
+```bash
+# Login to Docker Hub (create free account at hub.docker.com)
+podman login docker.io
+
+# Tag for Docker Hub
+podman tag network-ee:1.0 docker.io/YOUR_USERNAME/network-ee:1.0
+
+# Push to Docker Hub
+podman push docker.io/YOUR_USERNAME/network-ee:1.0
+
+# Verify on Docker Hub
+# https://hub.docker.com/r/YOUR_USERNAME/network-ee
+```
+
+</details>
+
+<details>
+<summary>9. Add EE to AWX</summary>
+
+```
+1. Register the Execution Environment
+
+    Log into your AWX UI.
+
+    On the left sidebar, go to Administration → Execution Environments.
+
+    Click the Add button.
+
+    Fill in the details:
+
+    Name: Network-Automation-EE (or whatever you prefer).
+
+    Image: localhost/network-ee:1.0
+
+    Note: Use the exact name you saw in your ctr images import output earlier.
+
+    Pull: Select Never (This is crucial! It tells AWX to use the image already on the K3s node instead of trying to download it from the internet).
+
+    Organization: Select your organization (e.g., Default).
+
+    Click Save.
+
+2. Create the "Localhost" Inventory
+
+    Go to Resources → Inventories and click Add → Add inventory.
+
+    Name: Local Test Inventory
+
+    Organization: Select your Organization.
+
+    Click Save.
+
+    Go to the Hosts tab and click Add.
+
+    Name: localhost
+
+    Variables: In the variables box, paste this to ensure AWX doesn't try to use SSH:
+
+    ```YAML
+    ansible_connection: local
+    ansible_python_interpreter: "{{ ansible_playbook_python }}"
+    ```
+    Click Save.
+  
+3. Launch the Test
+    Go to Resources → Templates → Add → Add job template.
+
+    Name: EE Smoke Test
+
+    Inventory: Local Test Inventory (the one you just made).
+
+    Project: Your Git Repo.
+
+    Playbook: ee-check.yml.
+
+    Execution Environment: Select your Network-Automation-EE.
+
+    Save and Launch.
+
+```
+
+</details>
+
+<details>
+<summary>10. Verify EE in AWX</summary>
+
+```
+┌─────────────────────────────────────────────────────────────────┐
+│        AWX > Administration > Execution Environments             │
+├─────────────────────────────────────────────────────────────────┤
+│                                                                  │
+│  Name                    │ Image                    │ Pull       │
+│  ────────────────────────┼──────────────────────────┼────────── │
+│  AWX EE (default)        │ quay.io/ansible/awx-ee   │ Always     │
+│  ✅ Network Automation EE │ network-ee:1.0           │ If needed  │
+│                                                                  │
+└─────────────────────────────────────────────────────────────────┘
+
+When creating Job Templates, select "Network Automation EE" 
+to use your custom collections!
+```
+
+</details>
+
+### 📁 Project Structure
+
+```
+~/custom-ee/
+├── execution-environment.yml    # Main EE definition
+├── requirements.yml             # Ansible collections
+├── requirements.txt             # Python packages
+└── context/                     # Auto-generated by builder
+    ├── _build/
+    └── Containerfile
+```
+
+### ✅ Verification Checklist
+
+| Step | Check | Expected |
+|------|-------|----------|
+| ansible-builder installed | `ansible-builder --version` | Version shown |
+| EE files created | `ls ~/custom-ee/` | 3 files present |
+| Image built | `podman images \| grep network-ee` | Image listed |
+| Collections present | Run container, `ansible-galaxy collection list` | netbox.netbox, cisco.ios shown |
+| Added to AWX | AWX UI > Execution Environments | Network Automation EE listed |
+
+### 🔧 Troubleshooting
+
+<details>
+<summary>❌ ansible-builder build fails</summary>
+
+```bash
+# Check build logs
+ansible-builder build --tag network-ee:1.0 --verbosity 3 2>&1 | tee build.log
+
+# Common issues:
+# 1. Network timeout - retry build
+# 2. Collection not found - check spelling in requirements.yml
+# 3. Python package conflict - check versions in requirements.txt
+
+# Clean and retry
+podman system prune -f
+ansible-builder build --tag network-ee:1.0 --no-cache
+```
+
+</details>
+
+<details>
+<summary>❌ K3s can't find local image</summary>
+
+```bash
+# Verify image is imported to K3s containerd
+sudo k3s ctr images list | grep network-ee
+
+# If not, re-import
+podman save network-ee:1.0 -o /tmp/network-ee.tar
+sudo k3s ctr images import /tmp/network-ee.tar
+
+# In AWX, set Pull policy to "Never" for local images
+```
+
+</details>
+
+<details>
+<summary>❌ AWX job fails with "collection not found"</summary>
+
+```bash
+# Verify the job is using correct EE
+# AWX > Jobs > [Your Job] > Details > Execution Environment
+
+# Should show: Network Automation EE
+# If it shows: AWX EE (default) - edit your Job Template
+
+# Job Template > Edit > Execution Environment > Select "Network Automation EE"
+```
+
+</details>
+
+### 🔗 Resources
+
+- [Ansible Builder Documentation](https://ansible.readthedocs.io/projects/builder/)
+- [AWX Execution Environments](https://ansible.readthedocs.io/projects/awx/en/latest/userguide/execution_environments.html)
+- [Quay.io AWX EE Images](https://quay.io/repository/ansible/awx-ee)
+
+---
 
 
 ## 📝 Changelog

@@ -4855,7 +4855,7 @@ The next phase of our Network Automation journey - Enterprise-grade automation w
 
 ## Video 17: AWX Installation on K3s
 
-🔜 **Coming Soon**
+[▶️ Watch on YouTube](https://www.https://www.youtube.com/watch?v=Y6YQc-tT2Yw)
 
 ### 📋 Overview
 
@@ -5264,7 +5264,7 @@ kubectl exec -it deployment/awx-task -n awx -- awx-manage changepassword admin
 
 ## Video 18: AWX Execution Environments
 
-🔜 **Coming Soon**
+[▶️ Watch on YouTube](https://www.https://www.youtube.com/watch?v=Y6YQc-tT2Yw)
 
 ### 📋 Overview
 

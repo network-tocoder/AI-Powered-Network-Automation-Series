@@ -5485,7 +5485,6 @@ dependencies:
 <details>
 <summary>7. Build the Execution Environment</summary>
 
-<details>
 
 ```bash
 

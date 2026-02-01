@@ -5506,23 +5506,20 @@ podman images | grep network-ee
 
 <details>
 
-<summary>8. Test the EE Locally</summary>
+<summary>8. Verification & Deployment</summary>
+
+Verify the build locally before moving it to the AWX server.
 
 ```bash
-# Run a container from the EE
-podman run -it --rm network-ee:1.0 /bin/bash
+# Check Ansible Version
+docker run network-ee:latest ansible --version
 
-# Inside container, verify collections
-ansible-galaxy collection list
+# Check Collections:
+docker run network-ee:latest ansible-galaxy collection list
 
-# Verify Python packages
-pip list | grep -E "pynetbox|netmiko|netaddr"
+# Check Python Packages
+docker run network-ee:latest pip list | grep pynetbox
 
-# Check Ansible version
-ansible --version
-
-# Exit container
-exit
 ```
 
 </details>
@@ -5536,9 +5533,9 @@ In our use case, we are building EE on Ansible node & AWX run on different node.
 # K3s includes a local registry, but for simplicity we'll load directly
 
 # Save image to tar file
-podman save network-ee:1.0 -o network-ee-1.0.tar
+podman save network-ee:latest -o network-ee.tar
 # If using Docker:
-# docker save network-ee:1.0 -o network-ee-1.0.tar
+docker save network-ee:latest -o network-ee.tar
 ```
 
 

@@ -5485,8 +5485,7 @@ dependencies:
 <details>
 <summary>7. Build the Execution Environment</summary>
 
-Build using ansible-builder with UV
-
+<details>
 
 ```bash
 
@@ -5505,6 +5504,8 @@ podman images | grep network-ee
 ```
 
 </details>
+
+<details>
 
 <summary>8. Test the EE Locally</summary>
 

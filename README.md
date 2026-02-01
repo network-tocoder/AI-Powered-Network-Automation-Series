@@ -5469,6 +5469,7 @@ docker images | grep awx-ee
 <summary>6. Create execution-environment.yml</summary>
 
 ````yaml
+
 ---
 version: 3
 images:

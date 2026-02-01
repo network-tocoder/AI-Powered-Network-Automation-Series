@@ -5576,7 +5576,7 @@ podman push docker.io/YOUR_USERNAME/network-ee:1.0
 </details>
 
 <details>
-<summary>10. Add EE to AWX</summary>
+<summary>10. Add EE to AWX UI </summary>
 
 ```
 1. Register the Execution Environment
@@ -5622,7 +5622,7 @@ podman push docker.io/YOUR_USERNAME/network-ee:1.0
 </details>
 
 <details>
-<summary>10. Verify EE in AWX</summary>
+<summary>11. Verify EE in AWX</summary>
 
 ```
 ┌─────────────────────────────────────────────────────────────────┐

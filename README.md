@@ -5342,14 +5342,15 @@ Build custom Execution Environments (EE) with network automation collections. EE
 
 ### 💻 Commands
 
-<summary>1. Create EE Project Directory</summary>
+<details>
+
+  <summary>1. Create EE Project Directory</summary>
 
 ```bash
 # Create and enter project directory
 mkdir -p ~/custom-ee && cd ~/custom-ee
 
 ```
-
 </details>
 
 <details>

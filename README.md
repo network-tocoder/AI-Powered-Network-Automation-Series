@@ -5484,6 +5484,28 @@ dependencies:
 
 <details>
 <summary>7. Build the Execution Environment</summary>
+
+Build using ansible-builder with UV
+
+
+```bash
+
+# Set registry auth path to user home
+export REGISTRY_AUTH_FILE=$HOME/.docker/config.json
+
+# Build the EE image
+uv run ansible-builder build -tag localhost/network-awx-ee:latest --container-runtime docker --verbosity 3
+
+# If using Docker instead of Podman:
+uv run ansible-builder build -tag localhost/network-awx-ee:latest --container-runtime podman --verbosity 3
+
+# Verify image was created
+podman images | grep network-ee
+# Or: docker images | grep network-ee
+```
+
+</details>
+
 <summary>8. Test the EE Locally</summary>
 
 ```bash

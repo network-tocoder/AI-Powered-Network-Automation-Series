@@ -5506,7 +5506,7 @@ podman images | grep network-ee
 
 <details>
 
-<summary>8. Verification & Deployment</summary>
+<summary>8. Verification/Check EE Locally </summary>
 
 Verify the build locally before moving it to the AWX server.
 
@@ -5514,7 +5514,7 @@ Verify the build locally before moving it to the AWX server.
 # Check Ansible Version
 docker run network-ee:latest ansible --version
 
-# Check Collections:
+# Check Collections
 docker run network-ee:latest ansible-galaxy collection list
 
 # Check Python Packages
@@ -5540,9 +5540,10 @@ docker save network-ee:latest -o network-ee.tar
 
 
 ```bash
-# Check image & ship EE to AWX node. 
+# Ship EE to AWX node. 
 ls -l
 scp network-ee-1.0.tar user@192.168.1.129:/tmp/
+
 # SSH to AWX node
 ls -l /tmp
 
@@ -5556,7 +5557,7 @@ sudo k3s ctr images list | grep network-ee
 </details>
 
 <details>
-<summary>8. Push EE to Registry (Option B: Docker Hub)</summary>
+<summary>9. Push EE to Registry (Option B: Docker Hub)</summary>
 
 ```bash
 # Login to Docker Hub (create free account at hub.docker.com)
@@ -5575,7 +5576,7 @@ podman push docker.io/YOUR_USERNAME/network-ee:1.0
 </details>
 
 <details>
-<summary>9. Add EE to AWX</summary>
+<summary>10. Add EE to AWX</summary>
 
 ```
 1. Register the Execution Environment
@@ -5590,7 +5591,7 @@ podman push docker.io/YOUR_USERNAME/network-ee:1.0
 
     Name: Network-Automation-EE (or whatever you prefer).
 
-    Image: localhost/network-ee:1.0
+    Image: localhost/network-ee:latest
 
     Note: Use the exact name you saw in your ctr images import output earlier.
 
@@ -5600,29 +5601,8 @@ podman push docker.io/YOUR_USERNAME/network-ee:1.0
 
     Click Save.
 
-2. Create the "Localhost" Inventory
-
-    Go to Resources → Inventories and click Add → Add inventory.
-
-    Name: Local Test Inventory
-
-    Organization: Select your Organization.
-
-    Click Save.
-
-    Go to the Hosts tab and click Add.
-
-    Name: localhost
-
-    Variables: In the variables box, paste this to ensure AWX doesn't try to use SSH:
-
-    ```YAML
-    ansible_connection: local
-    ansible_python_interpreter: "{{ ansible_playbook_python }}"
-    ```
-    Click Save.
-  
-3. Launch the Test
+ 
+2. Launch the Test
     Go to Resources → Templates → Add → Add job template.
 
     Name: EE Smoke Test

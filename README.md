@@ -4849,17 +4849,7 @@ gemini mcp list
 
 The next phase of our Network Automation journey - Enterprise-grade automation with Ansible AWX!
 
-### 📺 AWX Video Index
 
-| # | Video | Topic | Status |
-|---|-------|-------|--------|
-| 17 | [AWX Installation](#video-17-awx-installation-on-k3s) | K3s, Kubernetes, AWX | 🔜 Coming Soon |
-| 18 | [AWX Git Integration](#video-18-awx-git-integration) | GitHub/GitLab, Projects | 🔜 Coming Soon |
-| 19 | [AWX NetBox Inventory](#video-19-awx-netbox-inventory) | Dynamic Inventory | 🔜 Coming Soon |
-| 20 | [Execution Environments](#video-20-execution-environments) | Custom EE, Docker | 🔜 Coming Soon |
-| 21 | [AWX + Claude Code](#video-21-awx-claude-code-integration) | AI Agent + AWX API | 🔜 Coming Soon |
-| 22 | [AWX MCP Server](#video-22-awx-mcp-server) | Custom MCP for AWX | 🔜 Coming Soon |
-| 23 | [AWX + Gemini CLI](#video-23-awx-gemini-cli) | Free Remote AWX | 🔜 Coming Soon |
 
 ---
 
@@ -5271,6 +5261,84 @@ kubectl exec -it deployment/awx-task -n awx -- awx-manage changepassword admin
 - [K3s Documentation](https://docs.k3s.io/)
 
 ---
+
+## Video 18: AWX Execution Environments
+
+🔜 **Coming Soon**
+
+### 📋 Overview
+
+Build custom Execution Environments (EE) with network automation collections. EEs are container images that include Ansible, Python dependencies, and collections - ensuring consistent playbook execution.
+
+### ❓ Why Execution Environments?
+
+```
+┌─────────────────────────────────────────────────────────────────────────────┐
+│                    THE EXECUTION ENVIRONMENT PROBLEM                         │
+└─────────────────────────────────────────────────────────────────────────────┘
+
+  OLD WAY (AWX < 2.0)                    NEW WAY (AWX 2.0+)
+  ───────────────────                    ──────────────────
+
+  AWX Server                             AWX Server
+      │                                      │
+      ▼                                      ▼
+  Python installed                       Launch Container
+  on AWX host                                │
+      │                                      ▼
+      ▼                               ┌─────────────────┐
+  Collections installed               │ Execution Env   │
+  globally                            │   (Container)   │
+      │                               │                 │
+      ▼                               │ • Ansible 2.15  │
+  Version conflicts!                  │ • Python 3.11   │
+  Dependency hell!                    │ • netbox.netbox │
+                                      │ • cisco.ios     │
+  ❌ "Works on my machine"            │ • pynetbox      │
+                                      └─────────────────┘
+
+                                      ✅ Consistent everywhere!
+```
+
+### 🎯 What We'll Build
+
+| Component | Purpose |
+|-----------|---------|
+| `execution-environment.yml` | EE definition file |
+| `requirements.yml` | Ansible collections to include |
+| `requirements.txt` | Python packages to include |
+| Custom EE Image | Container with everything we need |
+
+### 🏗️ EE Architecture
+
+```
+┌─────────────────────────────────────────────────────────────────────────────┐
+│                         EXECUTION ENVIRONMENT                                │
+│                      network-ee:1.0                                          │
+├─────────────────────────────────────────────────────────────────────────────┤
+│                                                                              │
+│   Base Image: quay.io/ansible/awx-ee:latest                                 │
+│                                                                              │
+│   ┌─────────────────────────────────────────────────────────────────────┐   │
+│   │  ANSIBLE COLLECTIONS                                                 │   │
+│   │  • ansible.netcommon      - Network resource modules                │   │
+│   │  • cisco.ios              - Cisco IOS modules                       │   │
+│   │  • netbox.netbox          - NetBox inventory & modules              │   │
+│   │  • ansible.utils          - Filters and utilities                   │   │
+│   │  • fortinet.fortios       - FortiGate modules (optional)            │   │
+│   └─────────────────────────────────────────────────────────────────────┘   │
+│                                                                              │
+│   ┌─────────────────────────────────────────────────────────────────────┐   │
+│   │  PYTHON PACKAGES                                                     │   │
+│   │  • pynetbox               - NetBox API client                       │   │
+│   │  • netaddr                - IP address manipulation                 │   │
+│   │  • paramiko               - SSH library                             │   │
+│   │  • netmiko                - Network device SSH                      │   │
+│   │  • jmespath               - JSON query language                     │   │
+│   └─────────────────────────────────────────────────────────────────────┘   │
+│                                                                              │
+└─────────────────────────────────────────────────────────────────────────────┘
+```
 
 
 

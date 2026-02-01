@@ -5724,6 +5724,24 @@ sudo k3s ctr images import /tmp/network-ee.tar
 
 ---
 
+## Video 19: AWX GitHub + NetBox Integration
+
+🔜 **Coming Soon**
+
+### 📋 Overview
+
+Connect AWX to GitHub for GitOps-style automation and NetBox for dynamic inventory. Changes pushed to Git automatically sync to AWX. Devices added to NetBox automatically appear in AWX inventory.
+
+### 🎯 What We'll Configure
+
+| Component | Purpose |
+|-----------|---------|
+| GitHub Project | Sync playbooks from Git repository |
+| Machine Credential | SSH key for network devices |
+| NetBox Credential | API token for NetBox |
+| NetBox Inventory Source | Dynamic inventory from NetBox |
+| Job Template | Tie it all together |
+
 
 ## 📝 Changelog
 

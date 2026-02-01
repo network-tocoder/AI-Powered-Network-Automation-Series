@@ -5387,7 +5387,6 @@ newgrp docker
 
 <details>
 
-<details>
 <summary>3. Create requirements.yml (Collections)</summary>
 
 Note: We are using ansible.netcommon 6.0.0+ to ensure the latest connection plugins for Cisco and Fortinet are available.

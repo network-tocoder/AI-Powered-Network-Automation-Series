@@ -1,0 +1,10 @@
+---
+plugin: netbox.netbox.nb_inventory
+validate_certs: false
+group_by:
+  - device_roles
+  - sites
+  - platforms
+compose:
+  ansible_network_os: platform.slug
+  ansible_host: primary_ip4.address | split('/') | first

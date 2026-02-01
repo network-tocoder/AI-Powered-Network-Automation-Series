@@ -5467,6 +5467,7 @@ docker images | grep awx-ee
 <details>
 
 <summary>6. Create execution-environment.yml</summary>
+
 ```yaml
 ---
 version: 3
@@ -5476,9 +5477,11 @@ images:
 dependencies:
   galaxy: requirements.yml
   python: requirements.txt
+
 ```
 
 </details>
+
 <details>
 <summary>7. Build the Execution Environment</summary>
 <summary>8. Test the EE Locally</summary>

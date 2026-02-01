@@ -51,7 +51,7 @@ This series takes you from zero to hero in network automation. Build a complete 
 | 15 | [Ansible MCP Integration](#video-15-ansible-mcp-integration) | Ansible + MCP + Claude | [▶️ YouTube](https://www.youtube.com/watch?v=rN9GJgPKeCQ) |
 | 16 | [Gemini CLI + Remote MCP](#video-16-gemini-cli--remote-mcp) | Gemini CLI, SSE, FREE | [▶️ YouTube](https://www.youtube.com/watch?v=KdHF4fGbNdE) |
 | 17 | [AWX Installation](#video-17-awx-installation-on-k3s) | K3s, Kubernetes, AWX | [▶️ YouTube](https://www.youtube.com/watch?v=uoIo6gCgc1M) |
-| 18 | [AWX Execution Environments](#video-18-awx-execution-environments) | Custom EE, ansible-builder | [▶️ YouTube](https://www.https://www.youtube.com/watch?v=kWEyrHEPTQ8) |
+| 18 | [AWX Execution Environments](#video-18-awx-execution-environments) | Custom EE, ansible-builder | [▶️ YouTube](https://www.youtube.com/watch?v=kWEyrHEPTQ8) |
 
 ---
 

@@ -6359,6 +6359,23 @@ We've built a complete GitOps pipeline across Videos 17-19: AWX running on K3s, 
 # Install Ollama
 curl -fsSL https://ollama.com/install.sh | sh
 
+>>> Installing ollama to /usr/local
+[sudo] password for user: 
+>>> Downloading ollama-linux-amd64.tar.zst
+######################################################################## 100,0%
+>>> Creating ollama user...
+[sudo] password for user: 
+>>> Adding ollama user to render group...
+>>> Adding ollama user to video group...
+>>> Adding current user to ollama group...
+>>> Creating ollama systemd service...
+>>> Enabling and starting ollama service...
+Created symlink /etc/systemd/system/default.target.wants/ollama.service → /etc/systemd/system/ollama.service.
+>>> The Ollama API is now available at 127.0.0.1:11434.
+>>> Install complete. Run "ollama" from the command line.
+WARNING: No NVIDIA/AMD GPU detected. Ollama will run in CPU-only mode.
+user@ubuntu22-desktop:~$ 
+
 # Verify
 ollama --version
 systemctl status ollama

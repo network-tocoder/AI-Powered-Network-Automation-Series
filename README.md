@@ -6376,6 +6376,9 @@ ollama pull qwen2.5:7b
 
 # Verify
 ollama list
+
+# Quick Test
+ollama run qwen2.5:7b "What is Ansible AWX? One sentence.
 ```
 
 **Why qwen2.5:7b?**
@@ -6386,6 +6389,22 @@ ollama list
 | llama3.1:8b | ✅ Good | Alternative |
 | mistral:7b | ✅ Good | Lighter |
 | deepseek-r1 | ❌ None | Reasoning only, won't work |
+
+</details>
+
+<details>
+<summary>3. Setup AWX MCP Server </summary>
+
+```bash
+# Create folder for AWX MCP (consistent with other MCPs) 
+mkdir -p ~/mcp-servers/awx-mcp && cd ~/mcp-servers/awx-mcp
+
+
+# Verify
+ollama --version
+systemctl status ollama
+
+```
 
 </details>
 

@@ -6391,6 +6391,10 @@ systemctl status ollama
 # Best local model for tool calling
 ollama pull qwen2.5:7b
 
+# ALTERNATIVE options (pick based on your GPU/RAM)
+ollama pull llama3.1:8b
+ollama pull mistral:7b
+
 # Verify
 ollama list
 

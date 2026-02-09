@@ -6388,6 +6388,8 @@ ollama list
 | deepseek-r1 | ❌ None | Reasoning only, won't work |
 
 </details>
+
+
 ## 📝 Changelog
 
 ### v25.0 (2025-01-18)

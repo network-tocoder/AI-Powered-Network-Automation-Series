@@ -6256,8 +6256,8 @@ kubectl exec -it deployment/awx-task -n awx -- ping 192.168.1.201
 | NetBox Inventory Source | Dynamic inventory from NetBox |
 | Job Template | Tie it all together |
 
-## video 21: AWX MCP Server
-
+## Video 22: AWX MCP Installation
+Video-22-awx-mcp-Integeration
 
 🔜 **Coming Soon**
 

@@ -53,7 +53,7 @@ This series takes you from zero to hero in network automation. Build a complete 
 | 19 | [GitOps Workflow (Part 1)](#video-1-awx-github-netbox-integration ) | AWX + GitHub + Netbox |  [▶️ YouTube](https://www.youtube.com/watch?v=kZjcKulI9Us) |
 | 20 | [GitOps Workflow (Part 2](#video-2-awx-github-netbox-integration ) | AWX + GitHub + Netbox  |  [▶️ YouTube](https://www.youtube.com/watch?v=yzzei4lP_Jg) |
 | 21 | [GitOps Workflow (Part 3](#video-3-awx-github-netbox-integration ) | AWX + GitHub + Netbox  |  [▶️ YouTube](https://www.youtube.com/watch?v=yzzei4lP_Jg) |
-| 22 | [AWX MCP Integeration](#video-17-awx-installation-on-k3s ) | AWX + Ollama + Claude  | 🔜 Coming Soon |
+| 22 | [AWX MCP Integeration](#video-22-awx-mcp-Integeration ) | AWX + Ollama + Claude  | 🔜 Coming Soon |
 | 23 | [AWX MCP Server](#video-21-awx-mcp-server) | Custom MCP, AWX | 🔜 Coming Soon |
 | 24 | [AWX + Gemini CLI](#video-22-awx-gemini-cli) | Free AI, Remote AWX | 🔜 Coming Soon |
 

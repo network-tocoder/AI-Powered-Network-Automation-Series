@@ -5746,6 +5746,516 @@ Connect AWX to GitHub for GitOps-style automation and NetBox for dynamic invento
 | NetBox Inventory Source | Dynamic inventory from NetBox |
 | Job Template | Tie it all together |
 
+### 🏗️ Integration Architecture
+
+```
+┌─────────────────────────────────────────────────────────────────────────────┐
+│                      AWX GITOPS + NETBOX ARCHITECTURE                        │
+└─────────────────────────────────────────────────────────────────────────────┘
+
+                    ┌──────────────────┐
+                    │     GitHub       │
+                    │                  │
+                    │  📁 playbooks/   │
+                    │   ├── backup.yml │
+                    │   ├── config.yml │
+                    │   └── verify.yml │
+                    └────────┬─────────┘
+                             │
+                             │ Webhook / Sync
+                             ▼
+┌────────────────────────────────────────────────────────────────────────────┐
+│                              AWX                                            │
+│                                                                             │
+│  ┌─────────────┐     ┌─────────────┐     ┌─────────────────────────────┐  │
+│  │   Project   │     │  Inventory  │     │      Job Template           │  │
+│  │             │     │             │     │                             │  │
+│  │  GitHub ────┼─────│  NetBox ────┼─────│  Project: Network Playbooks │  │
+│  │  Playbooks  │     │  Dynamic    │     │  Inventory: NetBox Dynamic  │  │
+│  │             │     │  Inventory  │     │  Playbook: backup.yml       │  │
+│  └─────────────┘     └──────┬──────┘     │  Credentials: SSH + NetBox  │  │
+│                             │            │  EE: Network Automation EE  │  │
+│                             │            └─────────────────────────────┘  │
+│                             │                                              │
+└─────────────────────────────┼──────────────────────────────────────────────┘
+                              │
+                              │ API Query
+                              ▼
+                    ┌──────────────────┐
+                    │     NetBox       │
+                    │  192.168.1.120   │
+                    │                  │
+                    │  📱 vIOS-R1      │
+                    │  📱 vIOS-R2      │
+                    │  📱 vIOS-R3      │
+                    └──────────────────┘
+```
+
+### 📦 Prerequisites
+
+- ✅ Video 17: AWX installed and running
+- ✅ Video 18: Custom EE with netbox.netbox collection
+- ✅ Video 7: NetBox running with devices
+- ✅ GitHub account with repository
+
+### 💻 Commands
+
+<details>
+<summary>1. Prepare GitHub Repository</summary>
+
+```bash
+# Create a new repo on GitHub or use existing
+# Structure your repo like this:
+
+network-automation/
+├── playbooks/
+│   ├── backup_config.yml
+│   ├── show_version.yml
+│   └── deploy_ntp.yml
+├── inventory/
+│   └── netbox_inv.yml      # We won't use this - AWX handles it
+├── group_vars/
+│   └── all.yml
+└── README.md
+
+# Example: show_version.yml
+cat <<'EOF'
+---
+- name: Get Device Versions
+  hosts: all
+  gather_facts: no
+  connection: ansible.netcommon.network_cli
+  
+  tasks:
+    - name: Run show version
+      cisco.ios.ios_command:
+        commands:
+          - show version
+      register: version_output
+      
+    - name: Display version
+      debug:
+        msg: "{{ inventory_hostname }}: {{ version_output.stdout_lines[0] | first }}"
+EOF
+```
+
+</details>
+
+<details>
+<summary>2. Create Machine Credential (SSH)</summary>
+
+```
+AWX UI Steps:
+─────────────
+1. Navigate to: Resources > Credentials
+2. Click: Add
+3. Fill in:
+   - Name: Network SSH Credential
+   - Credential Type: Machine
+   - Username: ansible
+   - Password: ansible@123  (or use SSH key)
+4. Click: Save
+
+┌─────────────────────────────────────────────────────────────────┐
+│  Add Credential                                                  │
+├─────────────────────────────────────────────────────────────────┤
+│  Name:            [Network SSH Credential        ]              │
+│  Credential Type: [Machine                       ] ▼            │
+│  Organization:    [Default                       ] ▼            │
+│                                                                  │
+│  ─── Type Details ───                                           │
+│  Username:        [ansible                       ]              │
+│  Password:        [••••••••••                    ]              │
+│  SSH Private Key: [                              ]              │
+│  Privilege Escalation:                                          │
+│    Method:        [sudo                          ] ▼            │
+│    Password:      [                              ]              │
+│                                                                  │
+│                              [Cancel]  [Save]                    │
+└─────────────────────────────────────────────────────────────────┘
+```
+
+</details>
+
+<details>
+<summary>3. Create NetBox Credential</summary>
+
+```
+AWX UI Steps:
+─────────────
+1. Navigate to: Resources > Credentials
+2. Click: Add
+3. Fill in:
+   - Name: NetBox API Token
+   - Credential Type: NetBox  (if available) or Custom Credential
+   - NetBox URL: http://192.168.1.120:8000
+   - API Token: <your-netbox-token>
+4. Click: Save
+
+# Get your NetBox token:
+# NetBox UI > Admin > API Tokens > Add Token
+
+# Or via API:
+curl -X POST http://192.168.1.120:8000/api/users/tokens/provision/ \
+  -H "Content-Type: application/json" \
+  -d '{"username":"admin","password":"admin"}'
+```
+
+</details>
+
+<details>
+<summary>4. Create Source Control Credential (GitHub)</summary>
+
+```
+AWX UI Steps:
+─────────────
+1. Navigate to: Resources > Credentials
+2. Click: Add
+3. Fill in:
+   - Name: GitHub Personal Access Token
+   - Credential Type: Source Control
+   - Username: <your-github-username>
+   - Password: <your-github-pat>  (Personal Access Token)
+4. Click: Save
+
+# Create GitHub PAT:
+# GitHub > Settings > Developer Settings > Personal Access Tokens > Generate
+# Permissions: repo (full control)
+```
+
+</details>
+
+<details>
+<summary>5. Create Project (GitHub Sync)</summary>
+
+```
+AWX UI Steps:
+─────────────
+1. Navigate to: Resources > Projects
+2. Click: Add
+3. Fill in:
+   - Name: Network Automation Playbooks
+   - Organization: Default
+   - Execution Environment: Network Automation EE  ← Important!
+   - Source Control Type: Git
+   - Source Control URL: https://github.com/YOUR_USER/network-automation.git
+   - Source Control Credential: GitHub Personal Access Token
+   - Options:
+     ☑️ Clean
+     ☑️ Update Revision on Launch
+4. Click: Save
+5. Click: Sync (button with circular arrows)
+
+# Watch sync status
+# Should show: Successful
+```
+
+</details>
+
+<details>
+<summary>6. Create Inventory</summary>
+
+```
+AWX UI Steps:
+─────────────
+1. Navigate to: Resources > Inventories
+2. Click: Add > Add Inventory
+3. Fill in:
+   - Name: NetBox Dynamic Inventory
+   - Organization: Default
+4. Click: Save
+```
+
+</details>
+
+<details>
+<summary>7. Add NetBox Inventory Source</summary>
+
+```
+AWX UI Steps:
+─────────────
+1. Open: NetBox Dynamic Inventory (from step 6)
+2. Click: Sources tab
+3. Click: Add
+4. Fill in:
+   - Name: NetBox Source
+   - Source: Sourced from a Project  ← Select this!
+   - Project: Network Automation Playbooks
+   - Inventory File: inventory/netbox_inv.yml
+   
+   OR (if using built-in):
+   - Source: NetBox
+   - Credential: NetBox API Token
+   - NetBox URL: http://192.168.1.120:8000
+   
+5. Source Variables (YAML):
+```
+
+```yaml
+# Source Variables for NetBox inventory
+plugin: netbox.netbox.nb_inventory
+api_endpoint: http://192.168.1.120:8000
+token: "{{ lookup('env', 'NETBOX_TOKEN') }}"
+validate_certs: false
+
+# Group devices by these attributes
+group_by:
+  - device_roles
+  - sites
+  - platforms
+
+# Map NetBox platform to ansible_network_os
+compose:
+  ansible_network_os: >-
+    {%- if platform and 'ios' in platform.slug | lower -%}
+    cisco.ios.ios
+    {%- elif platform and 'fortios' in platform.slug | lower -%}
+    fortinet.fortios.fortios
+    {%- else -%}
+    {{ platform.slug | default('unknown') }}
+    {%- endif -%}
+  ansible_host: primary_ip4.address | default('') | split('/') | first
+```
+
+```
+6. Update Options:
+   ☑️ Overwrite
+   ☑️ Update on Launch
+7. Click: Save
+8. Click: Sync (circular arrows button)
+```
+
+</details>
+
+<details>
+<summary>8. Verify Inventory Sync</summary>
+
+```
+AWX UI Steps:
+─────────────
+1. Go to: Resources > Inventories > NetBox Dynamic Inventory
+2. Click: Hosts tab
+
+Expected:
+┌─────────────────────────────────────────────────────────────────┐
+│  Hosts                                                           │
+├─────────────────────────────────────────────────────────────────┤
+│  Name         │ Description        │ Activity                    │
+│  ─────────────┼────────────────────┼────────────────────────────│
+│  vIOS-R1      │ Cisco IOS Router   │ ●                          │
+│  vIOS-R2      │ Cisco IOS Router   │ ●                          │
+│  vIOS-R3      │ Cisco IOS Router   │ ●                          │
+└─────────────────────────────────────────────────────────────────┘
+
+3. Click: Groups tab
+
+Expected Groups (auto-created from NetBox):
+- device_roles_router
+- sites_main_dc
+- platforms_cisco_ios
+```
+
+</details>
+
+<details>
+<summary>9. Create Job Template</summary>
+
+```
+AWX UI Steps:
+─────────────
+1. Navigate to: Resources > Templates
+2. Click: Add > Add Job Template
+3. Fill in:
+   - Name: Show Version - All Routers
+   - Job Type: Run
+   - Inventory: NetBox Dynamic Inventory
+   - Project: Network Automation Playbooks
+   - Execution Environment: Network Automation EE  ← Important!
+   - Playbook: playbooks/show_version.yml
+   - Credentials: 
+     - Network SSH Credential (Machine)
+   
+4. Options:
+   ☐ Enable Privilege Escalation (not needed for network devices)
+   ☑️ Enable Concurrent Jobs (optional)
+   
+5. Click: Save
+```
+
+</details>
+
+<details>
+<summary>10. Launch Job and Verify</summary>
+
+```
+AWX UI Steps:
+─────────────
+1. Go to: Resources > Templates
+2. Find: "Show Version - All Routers"
+3. Click: 🚀 Launch button
+
+Watch job output:
+┌─────────────────────────────────────────────────────────────────┐
+│  Job: Show Version - All Routers #1                              │
+├─────────────────────────────────────────────────────────────────┤
+│  Status: ✅ Successful                                           │
+│  Started: 2025-01-24 10:30:00                                   │
+│  Finished: 2025-01-24 10:30:45                                  │
+│                                                                  │
+│  PLAY [Get Device Versions] ***                                  │
+│                                                                  │
+│  TASK [Run show version] ***                                     │
+│  ok: [vIOS-R1]                                                   │
+│  ok: [vIOS-R2]                                                   │
+│  ok: [vIOS-R3]                                                   │
+│                                                                  │
+│  TASK [Display version] ***                                      │
+│  ok: [vIOS-R1] => "Cisco IOS Software, IOSv ..."                │
+│  ok: [vIOS-R2] => "Cisco IOS Software, IOSv ..."                │
+│  ok: [vIOS-R3] => "Cisco IOS Software, IOSv ..."                │
+│                                                                  │
+│  PLAY RECAP ***                                                  │
+│  vIOS-R1  : ok=2  changed=0  failed=0                           │
+│  vIOS-R2  : ok=2  changed=0  failed=0                           │
+│  vIOS-R3  : ok=2  changed=0  failed=0                           │
+└─────────────────────────────────────────────────────────────────┘
+```
+
+</details>
+
+### 🔄 GitOps Workflow
+
+```
+┌─────────────────────────────────────────────────────────────────────────────┐
+│                           GITOPS WORKFLOW                                    │
+└─────────────────────────────────────────────────────────────────────────────┘
+
+Developer                  GitHub                    AWX
+    │                         │                        │
+    │  1. git push           │                        │
+    │ ──────────────────────>│                        │
+    │                         │                        │
+    │                         │   2. Webhook/Sync     │
+    │                         │ ──────────────────────>│
+    │                         │                        │
+    │                         │                        │ 3. Update Project
+    │                         │                        │    (git pull)
+    │                         │                        │
+    │                         │                        │ 4. Launch Job
+    │                         │                        │    (if configured)
+    │                         │                        │
+    │                         │                        │ 5. Run playbook
+    │                         │                        │    against NetBox
+    │                         │                        │    inventory
+    │                         │                        │
+    │   6. View results in AWX UI                     │
+    │ <────────────────────────────────────────────────│
+```
+
+### ✅ Complete Integration Checklist
+
+| Component | Verification | Status |
+|-----------|--------------|--------|
+| GitHub Credential | Resources > Credentials | ☐ |
+| Network SSH Credential | Resources > Credentials | ☐ |
+| NetBox Credential | Resources > Credentials | ☐ |
+| Project synced | Resources > Projects > Sync successful | ☐ |
+| Inventory created | Resources > Inventories | ☐ |
+| NetBox source added | Inventory > Sources > Sync successful | ☐ |
+| Hosts appear | Inventory > Hosts > vIOS-R1,R2,R3 | ☐ |
+| Groups appear | Inventory > Groups > device_roles_router | ☐ |
+| Job Template created | Resources > Templates | ☐ |
+| Job runs successfully | Jobs > Successful | ☐ |
+
+### 🔧 Troubleshooting
+
+<details>
+<summary>❌ Project sync fails - "Authentication failed"</summary>
+
+```bash
+# Check GitHub credential
+# 1. Verify PAT has 'repo' permission
+# 2. PAT might have expired - regenerate
+
+# Test manually on AWX node:
+git clone https://YOUR_TOKEN@github.com/YOUR_USER/network-automation.git
+```
+
+</details>
+
+<details>
+<summary>❌ Inventory sync shows 0 hosts</summary>
+
+```bash
+# Check NetBox has devices with primary IPs
+# NetBox UI > Devices > Each device needs:
+# - Primary IPv4 assigned
+# - Platform set (e.g., cisco-ios)
+# - Status: Active
+
+# Test NetBox API:
+curl -s http://192.168.1.120:8000/api/dcim/devices/ \
+  -H "Authorization: Token YOUR_TOKEN" | jq '.results[].name'
+```
+
+</details>
+
+<details>
+<summary>❌ Job fails - "No hosts matched"</summary>
+
+```bash
+# Check inventory has hosts
+# AWX UI > Inventories > NetBox Dynamic Inventory > Hosts
+
+# Check playbook 'hosts:' matches a group
+# Should be: hosts: all  or  hosts: device_roles_router
+
+# Sync inventory and retry
+# Inventory > Sources > Sync button
+```
+
+</details>
+
+<details>
+<summary>❌ Job fails - "Connection refused"</summary>
+
+```bash
+# Check ansible_host variable
+# AWX > Inventories > Hosts > vIOS-R1 > Variables
+# Should show: ansible_host: 192.168.1.201
+
+# Check network connectivity from AWX
+kubectl exec -it deployment/awx-task -n awx -- ping 192.168.1.201
+
+# Check SSH credentials are correct
+# Try manual SSH from AWX node
+```
+
+</details>
+
+<details>
+<summary>❌ Collection not found in job</summary>
+
+```bash
+# Verify Job Template uses correct EE
+# Resources > Templates > [Your Template] > Execution Environment
+# Should be: Network Automation EE (from Video 18)
+
+# NOT: AWX EE (default)
+
+# If still failing, rebuild EE with correct collections
+```
+
+</details
+
+| Component | Purpose |
+|-----------|---------|
+| GitHub Project | Sync playbooks from Git repository |
+| Machine Credential | SSH key for network devices |
+| NetBox Credential | API token for NetBox |
+| NetBox Inventory Source | Dynamic inventory from NetBox |
+| Job Template | Tie it all together |
+
 
 ## 📝 Changelog
 

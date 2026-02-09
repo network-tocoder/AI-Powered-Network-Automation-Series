@@ -30,8 +30,6 @@ This series takes you from zero to hero in network automation. Build a complete 
 
 ---
 
-## 📺 Video Index
-
 | # | Video | Topic | 🎬 Watch |
 |---|-------|-------|----------|
 | 1 | [EVE-NG Installation](#video-1-eve-ng-installation--first-virtual-lab) | EVE-NG, Virtual Lab Setup | [▶️ YouTube](https://www.youtube.com/watch?v=ABNOS7GypxA) |
@@ -49,10 +47,15 @@ This series takes you from zero to hero in network automation. Build a complete 
 | 13 | [Custom Device MCP](#video-13-custom-mcp-server---network-device-automation) | Netmiko, SSH, FastMCP | [▶️ YouTube](https://www.youtube.com/watch?v=vtDuhAP-KfQ) |
 | 14 | [Ansible Dynamic Inventory](#video-14-ansible-dynamic-inventory-with-netbox) | Ansible, NetBox Plugin | [▶️ YouTube](https://www.youtube.com/watch?v=YwZ6c96R_v0) |
 | 15 | [Ansible MCP Integration](#video-15-ansible-mcp-integration) | Ansible + MCP + Claude | [▶️ YouTube](https://www.youtube.com/watch?v=rN9GJgPKeCQ) |
-| 16 | [Gemini CLI + Remote MCP](#video-16-gemini-cli--remote-mcp) | Gemini CLI, SSE, FREE | [▶️ YouTube](https://www.youtube.com/watch?v=KdHF4fGbNdE) |
-| 17 | [AWX Installation](#video-17-awx-installation-on-k3s) | K3s, Kubernetes, AWX | [▶️ YouTube](https://www.youtube.com/watch?v=uoIo6gCgc1M) |
+| 16 | [Gemini CLI + Remote MCP](#video-16-gemini-cli--remote-mcp) | Gemini CLI, SSE, FREE | [▶️ YouTube](https://https://www.youtube.com/watch?v=KdHF4fGbNdE) |
+| 17 | [AWX Installation](#video-17-awx-installation-on-k3s) | K3s, Kubernetes, AWX | [▶️ YouTube](https://www.youtube.com/watch?v=Y6YQc-tT2Yw) |
 | 18 | [AWX Execution Environments](#video-18-awx-execution-environments) | Custom EE, ansible-builder | [▶️ YouTube](https://www.youtube.com/watch?v=kWEyrHEPTQ8) |
-| 19 | [AWX GitHub + NetBox](#video-19-awx-github--netbox-integration) | Git Sync, Dynamic Inventory | 🔜 Coming Soon |
+| 19 | [GitOps Workflow (Part 1)](#video-1-awx-github--netbox-integration ) | AWX + GitHub + Netbox |  [▶️ YouTube](https://www.youtube.com/watch?v=kZjcKulI9Us) |
+| 19 | [GitOps Workflow (Part 2](#video-2-awx-github--netbox-integration ) | AWX + GitHub + Netbox  |  [▶️ YouTube](https://www.youtube.com/watch?v=yzzei4lP_Jg) |
+| 19 | [GitOps Workflow (Part 3](#video-3-awx-github--netbox-integration ) | AWX + GitHub + Netbox  |  [▶️ YouTube](https://www.youtube.com/watch?v=yzzei4lP_Jg) |
+| 20 | [AWX + Claude Code](#video-20-awx-claude-code-integration) | AI Agent, AWX API | 🔜 Coming Soon |
+| 21 | [AWX MCP Server](#video-21-awx-mcp-server) | Custom MCP, AWX | 🔜 Coming Soon |
+| 22 | [AWX + Gemini CLI](#video-22-awx-gemini-cli) | Free AI, Remote AWX | 🔜 Coming Soon |
 
 ---
 

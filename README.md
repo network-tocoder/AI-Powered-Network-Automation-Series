@@ -6353,112 +6353,41 @@ We've built a complete GitOps pipeline across Videos 17-19: AWX running on K3s, 
 ### 💻 Commands
 
 <details>
-<summary>1. Download FortiGate VM Image</summary>
+<summary>1. Install & Verify Ollama (if not installed)</summary>
 
 ```bash
-# Visit: https://support.fortinet.com/
-# Login with account (free trial available)
-# Download: FortiGate-VM64-KVM (QCOW2 format)
-# Version: Latest 7.x
+# Install Ollama
+curl -fsSL https://ollama.com/install.sh | sh
 
-# On your computer, upload to EVE-NG via SCP
-scp FGT_VM64_KVM-v7.x.x-build.out root@<eve-ng-ip>:/tmp/
+# Verify
+ollama --version
+systemctl status ollama
+
 ```
 
 </details>
 
 <details>
-<summary>2. Install FortiGate in EVE-NG</summary>
+<summary>2. Pull Model with Tool Calling Support</summary>
 
 ```bash
-# On EVE-NG server
-cd /tmp
+# Best local model for tool calling
+ollama pull qwen2.5:7b
 
-# Create FortiGate directory
-mkdir -p /opt/unetlab/addons/qemu/fortigate-7.4.1
-
-# Rename image
-mv FGT_VM64_KVM-v7-build*.out /opt/unetlab/addons/qemu/fortigate-7.4.1/hda.qcow2
-
-# Fix permissions
-/opt/unetlab/wrappers/unl_wrapper -a fixpermissions
-
-# Verify installation
-ls -la /opt/unetlab/addons/qemu/fortigate-7.4.1/
+# Verify
+ollama list
 ```
 
-</details>
+**Why qwen2.5:7b?**
 
-<details>
-<summary>3. FortiGate Initial Configuration</summary>
-
-```bash
-# Default credentials
-# Username: admin
-# Password: (blank - press Enter)
-
-# Initial setup via console
-# Set admin password
-config system admin
-    edit admin
-        set password YourStrongPassword
-    end
-
-# Configure hostname
-config system global
-    set hostname FortiGate-VM
-end
-
-# Configure management interface
-config system interface
-    edit port1
-        set mode static
-        set ip 192.168.1.99/24
-        set allowaccess ping https ssh http
-    end
-
-# Configure default gateway
-config router static
-    edit 1
-        set gateway 192.168.1.1
-        set device port1
-    next
-end
-
-# Configure DNS
-config system dns
-    set primary 8.8.8.8
-    set secondary 8.8.4.4
-end
-
-# Save configuration
-execute save config
-```
+| Model | Tool Calling | Notes |
+|-------|-------------|-------|
+| qwen2.5:7b | ✅ Excellent | Best for MCP tool use |
+| llama3.1:8b | ✅ Good | Alternative |
+| mistral:7b | ✅ Good | Lighter |
+| deepseek-r1 | ❌ None | Reasoning only, won't work |
 
 </details>
-
-<details>
-<summary>4. Verify Connectivity</summary>
-
-```bash
-# Check interface status
-get system interface physical
-
-# Test ping
-execute ping 8.8.8.8
-
-# Check routes
-get router info routing-table all
-
-# Access via GUI
-# https://192.168.1.99
-# Username: admin
-# Password: YourStrongPassword
-```
-
-</details>
-
-
 ## 📝 Changelog
 
 ### v25.0 (2025-01-18)

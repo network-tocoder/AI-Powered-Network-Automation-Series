@@ -5730,7 +5730,6 @@ sudo k3s ctr images import /tmp/network-ee.tar
 
 ## Video 19: AWX GitHub + NetBox Integration
 
-🔜 **Coming Soon**
 
 ### 📋 Overview
 
